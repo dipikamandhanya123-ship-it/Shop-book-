@@ -1,0 +1,1537 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>DukaanPro</title>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<style>
+:root{
+  --p:#2563eb;--ph:#1d4ed8;--pl:#eff6ff;--p2:#dbeafe;
+  --g:#059669;--gh:#047857;--gl:#ecfdf5;
+  --r:#dc2626;--rl:#fef2f2;
+  --w:#d97706;--wl:#fffbeb;
+  --pur:#7c3aed;--purl:#f5f3ff;
+  --bg:#f0f4f8;--sf:#fff;--bd:#e2e8f0;--bd2:#cbd5e1;
+  --tx:#0f172a;--tx2:#334155;--muted:#64748b;--muted2:#94a3b8;
+  --sw:240px;
+  --radius:14px;--radius-sm:9px;--radius-lg:20px;
+  --shadow:0 1px 3px rgba(0,0,0,.06),0 4px 16px rgba(0,0,0,.06);
+  --shadow-lg:0 8px 30px rgba(0,0,0,.12);
+}
+*{box-sizing:border-box;margin:0;padding:0;font-family:'Segoe UI',system-ui,sans-serif}
+body{background:var(--bg);color:var(--tx);-webkit-font-smoothing:antialiased}
+a{color:var(--p)}
+
+/* ── SCREENS ── */
+.scr{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:16px}
+#sa{background:linear-gradient(150deg,#1e3a8a 0%,#065f46 100%)}
+#sc,#ss{background:var(--bg)}
+
+/* ── AUTH ── */
+.auth-card{background:#fff;border-radius:var(--radius-lg);padding:40px;width:100%;max-width:420px;box-shadow:var(--shadow-lg)}
+.brand{text-align:center;margin-bottom:28px}
+.brand-icon{width:56px;height:56px;background:linear-gradient(135deg,#2563eb,#059669);border-radius:16px;display:flex;align-items:center;justify-content:center;font-size:26px;margin:0 auto 12px}
+.brand h1{font-size:24px;font-weight:800;color:var(--tx);letter-spacing:-.5px}
+.brand p{color:var(--muted);font-size:13px;margin-top:3px}
+.atabs{display:flex;background:var(--bg);border-radius:10px;padding:4px;margin-bottom:22px;gap:4px}
+.atab{flex:1;padding:8px;text-align:center;cursor:pointer;font-weight:600;font-size:13px;color:var(--muted);border-radius:8px;transition:.2s}
+.atab.on{background:#fff;color:var(--p);box-shadow:0 1px 4px rgba(0,0,0,.1)}
+
+/* ── FORM ELEMENTS ── */
+.fg{margin-bottom:14px}
+label{display:block;font-size:12px;font-weight:700;color:var(--tx2);margin-bottom:5px;letter-spacing:.2px}
+input,select,textarea{width:100%;padding:10px 14px;border:1.5px solid var(--bd);border-radius:var(--radius-sm);font-size:14px;outline:none;transition:.15s;background:#fff;color:var(--tx);-webkit-appearance:none}
+input:focus,select:focus{border-color:var(--p);box-shadow:0 0 0 3px rgba(37,99,235,.1)}
+input::placeholder{color:var(--muted2)}
+select{cursor:pointer;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%2394a3b8' d='M6 8L1 3h10z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;padding-right:32px}
+
+/* ── BUTTONS ── */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;padding:10px 18px;border-radius:var(--radius-sm);font-size:14px;font-weight:600;cursor:pointer;border:none;transition:.15s;white-space:nowrap;text-decoration:none}
+.btn:active{transform:scale(.97)}
+.btn-p{background:var(--p);color:#fff}.btn-p:hover{background:var(--ph)}
+.btn-g{background:var(--g);color:#fff}.btn-g:hover{background:var(--gh)}
+.btn-r{background:var(--r);color:#fff}
+.btn-o{background:#fff;color:var(--tx);border:1.5px solid var(--bd)}.btn-o:hover{background:var(--bg)}
+.btn-ghost{background:transparent;color:var(--p);padding:6px 10px}
+.btn-w100{width:100%}
+.btn-sm{padding:5px 11px;font-size:12px;border-radius:7px}
+.btn-google{background:#fff;color:var(--tx);border:1.5px solid var(--bd);width:100%;margin-top:10px}
+.btn-google:hover{background:#f8fafc;border-color:var(--bd2)}
+.sep{text-align:center;color:var(--muted2);font-size:12px;margin:14px 0;position:relative}
+.sep::before,.sep::after{content:'';position:absolute;top:50%;width:43%;height:1px;background:var(--bd)}
+.sep::before{left:0}.sep::after{right:0}
+.errmsg{color:var(--r);font-size:13px;margin-top:10px;text-align:center;padding:8px 12px;background:var(--rl);border-radius:8px;display:none}
+
+/* ── CHOICE ── */
+.choice-box{background:#fff;border-radius:var(--radius-lg);padding:36px;width:100%;max-width:460px;box-shadow:var(--shadow-lg)}
+.choice-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:20px}
+.choice-card{border:2px solid var(--bd);border-radius:var(--radius);padding:22px 14px;text-align:center;cursor:pointer;transition:.2s}
+.choice-card:hover{border-color:var(--p);background:var(--pl)}
+.choice-card .emo{font-size:36px;margin-bottom:10px}
+.choice-card h3{font-size:14px;font-weight:700}
+.choice-card p{font-size:12px;color:var(--muted);margin-top:4px}
+
+/* ── SETUP ── */
+.setup-box{background:#fff;border-radius:var(--radius-lg);padding:36px;width:100%;max-width:560px;box-shadow:var(--shadow-lg)}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.g3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.qrprev-box{border:1.5px dashed var(--bd);border-radius:10px;padding:14px;text-align:center;display:none;margin-top:10px}
+
+/* ── APP SHELL ── */
+#app{display:none;min-height:100vh}
+.sidebar{position:fixed;left:0;top:0;bottom:0;width:var(--sw);background:#0f172a;z-index:200;overflow-y:auto;transition:transform .3s;display:flex;flex-direction:column}
+.s-logo{padding:18px 20px 14px;border-bottom:1px solid rgba(255,255,255,.07)}
+.s-logo h2{color:#fff;font-size:15px;font-weight:700;line-height:1.3}
+.s-logo p{color:rgba(255,255,255,.38);font-size:11px;margin-top:2px}
+.s-code{background:rgba(255,255,255,.08);color:#93c5fd;font-size:11px;padding:4px 10px;border-radius:6px;margin-top:7px;display:inline-block;cursor:pointer;font-family:monospace;letter-spacing:2px;transition:.15s}
+.s-code:hover{background:rgba(255,255,255,.15)}
+.s-nav{padding:8px 0;flex:1}
+.s-sec{padding:12px 20px 4px;font-size:10px;text-transform:uppercase;letter-spacing:1px;color:rgba(255,255,255,.25);font-weight:700}
+.s-item{display:flex;align-items:center;gap:10px;padding:9px 20px;color:rgba(255,255,255,.6);font-size:13px;cursor:pointer;transition:.15s;border-left:3px solid transparent;user-select:none}
+.s-item:hover{background:rgba(255,255,255,.06);color:#fff}
+.s-item.on{background:rgba(37,99,235,.25);color:#fff;border-left-color:var(--p);font-weight:600}
+.s-icon{font-size:15px;width:18px;text-align:center}
+.main{margin-left:var(--sw);padding:24px;min-height:100vh}
+.topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:22px;flex-wrap:wrap;gap:10px;position:relative}
+.page-title{font-size:20px;font-weight:800;color:var(--tx)}
+.page-sub{color:var(--muted);font-size:13px;margin-top:1px}
+
+/* ── BADGES ── */
+.badge{display:inline-flex;align-items:center;padding:3px 9px;border-radius:20px;font-size:11px;font-weight:700;letter-spacing:.2px}
+.b-blue{background:var(--pl);color:var(--p)}
+.b-green{background:var(--gl);color:var(--g)}
+.b-red{background:var(--rl);color:var(--r)}
+.b-yellow{background:var(--wl);color:var(--w)}
+.b-purple{background:var(--purl);color:var(--pur)}
+.b-dark{background:#1e293b;color:#cbd5e1}
+
+/* ── CARDS ── */
+.card{background:#fff;border-radius:var(--radius);border:1px solid var(--bd);padding:20px;box-shadow:var(--shadow)}
+.stat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:12px;margin-bottom:20px}
+.stat-card{background:#fff;border-radius:var(--radius);border:1px solid var(--bd);padding:16px 18px;box-shadow:var(--shadow)}
+.stat-label{font-size:11px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px}
+.stat-val{font-size:22px;font-weight:800;line-height:1}
+.s-blue{color:var(--p)}.s-green{color:var(--g)}.s-red{color:var(--r)}.s-yellow{color:var(--w)}
+
+/* ── TABLE ── */
+.tw{overflow-x:auto;border-radius:var(--radius);border:1px solid var(--bd);box-shadow:var(--shadow)}
+table{width:100%;border-collapse:collapse;background:#fff;font-size:13px}
+th{background:#f8fafc;padding:10px 14px;text-align:left;font-weight:700;color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:.5px;border-bottom:1px solid var(--bd);white-space:nowrap}
+td{padding:10px 14px;border-bottom:1px solid var(--bd);vertical-align:middle}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:#fafbfc}
+
+/* ── PAGES ── */
+.page{display:none}.page.on{display:block}
+
+/* ── DASHBOARD TODAY BOX ── */
+.today-box{background:linear-gradient(135deg,#1e40af 0%,#065f46 100%);color:#fff;border-radius:var(--radius);padding:24px;margin-bottom:20px;position:relative;overflow:hidden}
+.today-box::after{content:'₹';position:absolute;right:-10px;top:-20px;font-size:120px;font-weight:900;opacity:.06}
+.today-box .label{font-size:13px;opacity:.8;margin-bottom:8px;font-weight:600}
+.today-box .amount{font-size:36px;font-weight:900;letter-spacing:-1px}
+.today-box .breakdown{opacity:.75;font-size:13px;margin-top:8px;display:flex;gap:16px;flex-wrap:wrap}
+.today-box .bk-item{display:flex;align-items:center;gap:5px}
+
+/* ── SALE PAGE ── */
+.prod-search-results{max-height:240px;overflow-y:auto;border:1.5px solid var(--bd);border-radius:var(--radius-sm);background:#fff;box-shadow:var(--shadow-lg);position:relative;z-index:20}
+.psr-item{padding:10px 14px;cursor:pointer;font-size:13px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--bd);transition:.1s;gap:8px}
+.psr-item:last-child{border-bottom:none}
+.psr-item:hover{background:var(--pl)}
+.psr-item .pname{font-weight:600;flex:1}
+.psr-item .pcat{font-size:11px;color:var(--muted)}
+.psr-item .pprice{font-weight:800;color:var(--p);white-space:nowrap}
+.sale-row{display:flex;align-items:center;gap:8px;margin-bottom:8px;padding:10px 12px;background:var(--bg);border-radius:var(--radius-sm);font-size:13px}
+.sale-name{flex:1;font-weight:600}
+.iprice-edit{background:transparent;border:none;border-bottom:2px dashed var(--p);width:72px;font-size:13px;padding:2px 4px;text-align:right;color:var(--p);font-weight:800;outline:none;-moz-appearance:textfield}
+.iprice-edit:focus{background:var(--pl);border-bottom-style:solid;border-radius:4px}
+.pay-btns{display:flex;gap:8px;flex-wrap:wrap}
+.pay-btn{padding:9px 18px;border-radius:var(--radius-sm);font-size:13px;font-weight:600;cursor:pointer;border:1.5px solid var(--bd);background:#fff;color:var(--tx);transition:.15s}
+.pay-btn.on{border-color:var(--p);background:var(--pl);color:var(--p)}
+
+/* ── STOCK ── */
+.cat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:14px}
+.cat-box{background:#fff;border-radius:var(--radius);border:1px solid var(--bd);overflow:hidden;box-shadow:var(--shadow)}
+.cat-head{padding:13px 18px;font-weight:700;font-size:13px;display:flex;align-items:center;justify-content:space-between}
+.kirana{background:#fef9c3;color:#854d0e}
+.kapda{background:#ede9fe;color:#5b21b6}
+.mahua{background:#dcfce7;color:#166534}
+.other{background:#e0f2fe;color:#075985}
+.cat-body{max-height:340px;overflow-y:auto}
+
+/* ── CREDIT ── */
+.cred-card{border:1px solid var(--bd);border-radius:var(--radius);padding:16px;margin-bottom:12px;background:#fff;box-shadow:var(--shadow)}
+
+/* ── MODAL ── */
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:500;display:none;align-items:center;justify-content:center;padding:16px;backdrop-filter:blur(2px)}
+.overlay.on{display:flex}
+.modal{background:#fff;border-radius:var(--radius-lg);padding:28px;width:100%;max-width:500px;max-height:90vh;overflow-y:auto;box-shadow:var(--shadow-lg)}
+.modal-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px}
+.modal-head h3{font-size:17px;font-weight:800}
+.mclose{background:var(--bg);border:none;width:32px;height:32px;border-radius:50%;cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;color:var(--muted);transition:.15s}
+.mclose:hover{background:var(--bd);color:var(--tx)}
+.modal-foot{display:flex;gap:10px;justify-content:flex-end;margin-top:22px;padding-top:18px;border-top:1px solid var(--bd)}
+
+/* ── CHATBOT ── */
+.chat-fab{position:fixed;bottom:22px;right:22px;width:56px;height:56px;border-radius:50%;background:linear-gradient(135deg,var(--p),var(--g));color:#fff;border:none;cursor:pointer;font-size:24px;box-shadow:0 4px 20px rgba(37,99,235,.45);z-index:300;transition:transform .2s;display:none}
+.chat-fab:hover{transform:scale(1.1)}
+.chat-panel{position:fixed;bottom:88px;right:22px;width:340px;height:450px;background:#fff;border-radius:var(--radius-lg);border:1px solid var(--bd);box-shadow:var(--shadow-lg);z-index:300;display:none;flex-direction:column;overflow:hidden}
+.chat-head{background:linear-gradient(135deg,var(--p),var(--g));color:#fff;padding:13px 16px;display:flex;align-items:center;justify-content:space-between}
+.chat-head h4{font-size:14px;font-weight:700}
+.chat-msgs{flex:1;overflow-y:auto;padding:12px;display:flex;flex-direction:column;gap:8px}
+.cmsg{max-width:88%;padding:9px 13px;border-radius:12px;font-size:13px;line-height:1.5}
+.cmsg.bot{background:var(--bg);border:1px solid var(--bd);align-self:flex-start;border-radius:4px 12px 12px 12px}
+.cmsg.user{background:var(--p);color:#fff;align-self:flex-end;border-radius:12px 12px 4px 12px}
+.chat-in{display:flex;border-top:1px solid var(--bd)}
+.chat-in input{flex:1;border:none;padding:11px 14px;font-size:13px;outline:none}
+.chat-in button{padding:11px 14px;background:var(--p);color:#fff;border:none;cursor:pointer;font-size:15px}
+
+/* ── SEARCH BAR ── */
+.sb{position:relative;display:inline-block}
+.sb input{padding:9px 14px 9px 36px;border:1.5px solid var(--bd);border-radius:10px;font-size:13px;width:210px;outline:none;background:#fff}
+.sb input:focus{border-color:var(--p)}
+.sb::before{content:'🔍';position:absolute;left:10px;top:50%;transform:translateY(-50%);font-size:13px;pointer-events:none}
+.search-drop{position:absolute;z-index:300;background:#fff;border:1px solid var(--bd);border-radius:var(--radius);width:270px;max-height:230px;overflow-y:auto;box-shadow:var(--shadow-lg);right:0;top:calc(100% + 5px);display:none}
+
+/* ── MOBILE ── */
+.mob-toggle{display:none;align-items:center;justify-content:center;width:40px;height:40px;background:#fff;border:1px solid var(--bd);border-radius:10px;cursor:pointer;font-size:18px;box-shadow:var(--shadow)}
+.mob-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:199}
+.mob-bg.on{display:block}
+
+/* ── MEMBER ── */
+.member-row{border:1px solid var(--bd);border-radius:var(--radius);padding:14px;margin-bottom:10px;background:#fff;display:flex;align-items:center;gap:14px;box-shadow:var(--shadow)}
+.avatar{width:42px;height:42px;border-radius:50%;background:linear-gradient(135deg,var(--p),var(--g));display:flex;align-items:center;justify-content:center;font-weight:800;font-size:16px;color:#fff;flex-shrink:0}
+
+/* ── NOTIF ── */
+.notif{position:fixed;top:18px;right:18px;background:#0f172a;color:#fff;padding:12px 20px;border-radius:var(--radius);font-size:13px;font-weight:700;z-index:9999;transform:translateY(-120px);transition:transform .3s cubic-bezier(.34,1.56,.64,1);max-width:320px;box-shadow:var(--shadow-lg)}
+.notif.show{transform:translateY(0)}
+.notif.ok{background:var(--g)}.notif.er{background:var(--r)}.notif.wn{background:var(--w)}
+
+/* ── CATALOGUE QR PAGE ── */
+.qr-page{background:#fff;border-radius:var(--radius-lg);border:1px solid var(--bd);overflow:hidden;box-shadow:var(--shadow-lg);max-width:420px}
+.qr-page-top{background:linear-gradient(135deg,#1e40af,#065f46);color:#fff;padding:24px;text-align:center}
+.qr-page-top h2{font-size:20px;font-weight:800;margin-bottom:4px}
+.qr-page-top p{opacity:.75;font-size:13px}
+.qr-location-btn{display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);color:#fff;padding:6px 14px;border-radius:20px;font-size:12px;font-weight:600;cursor:pointer;margin-top:12px;text-decoration:none;transition:.15s}
+.qr-location-btn:hover{background:rgba(255,255,255,.25)}
+.qr-products-section{padding:20px}
+.qr-cat-title{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid var(--bd)}
+.qr-product-row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--bd);font-size:13px}
+.qr-product-row:last-child{border-bottom:none}
+.qr-product-name{font-weight:600}
+.qr-product-price{font-weight:800;color:var(--p)}
+
+/* ── CALENDAR ── */
+.cal-wrap{background:#fff;border-radius:var(--radius);border:1px solid var(--bd);padding:16px;margin-bottom:20px;box-shadow:var(--shadow)}
+.cal-nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.cal-nav h3{font-size:15px;font-weight:700}
+.cal-nav button{background:var(--bg);border:1px solid var(--bd);border-radius:8px;width:32px;height:32px;cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;transition:.15s}
+.cal-nav button:hover{background:var(--bd)}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
+.cal-dow{text-align:center;font-size:11px;font-weight:700;color:var(--muted);padding:4px 0}
+.cal-day{text-align:center;padding:6px 2px;border-radius:8px;cursor:pointer;font-size:13px;font-weight:500;transition:.15s;position:relative}
+.cal-day:hover{background:var(--pl);color:var(--p)}
+.cal-day.has-sales{font-weight:700;color:var(--g)}
+.cal-day.has-sales::after{content:'';position:absolute;bottom:2px;left:50%;transform:translateX(-50%);width:4px;height:4px;border-radius:50%;background:var(--g)}
+.cal-day.selected{background:var(--p);color:#fff;font-weight:700}
+.cal-day.selected::after{background:#fff}
+.cal-day.today-mark{border:2px solid var(--p)}
+.cal-day.other-month{color:var(--muted2)}
+
+/* ── DAY REPORT ── */
+.day-report{background:#fff;border-radius:var(--radius);border:1px solid var(--bd);padding:20px;box-shadow:var(--shadow)}
+.day-report-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:8px}
+
+/* ── UTILS ── */
+.mt2{margin-top:8px}.mt3{margin-top:14px}.mt4{margin-top:20px}
+.mb2{margin-bottom:8px}.mb3{margin-bottom:14px}.mb4{margin-bottom:20px}
+.row{display:flex}.ac{align-items:center}.gap2{gap:8px}.gap3{gap:12px}
+.muted{color:var(--muted);font-size:13px}
+.empty{text-align:center;padding:36px 20px;color:var(--muted)}
+.empty-icon{font-size:34px;margin-bottom:8px}
+.divider{height:1px;background:var(--bd);margin:16px 0}
+input[type=number]{-moz-appearance:textfield}
+input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none}
+.section-title{font-size:15px;font-weight:700;margin-bottom:14px;color:var(--tx)}
+
+/* ── RESPONSIVE ── */
+@media(max-width:720px){
+  :root{--sw:0px}
+  .sidebar{transform:translateX(-240px);width:240px!important}
+  .sidebar.open{transform:translateX(0)}
+  .main{margin-left:0!important;padding:14px}
+  .mob-toggle{display:flex!important}
+  .stat-grid{grid-template-columns:1fr 1fr}
+  .g2{grid-template-columns:1fr}
+  .g3{grid-template-columns:1fr 1fr}
+  .chat-panel{width:calc(100vw - 28px);right:14px}
+  .sb input{width:150px}
+  #dash-bottom{grid-template-columns:1fr!important}
+  .choice-grid{grid-template-columns:1fr}
+  .today-box .breakdown{gap:10px}
+}
+</style>
+</head>
+<body>
+
+<div class="notif" id="notif"></div>
+
+<!-- ══════ AUTH ══════ -->
+<div class="scr" id="sa">
+  <div class="auth-card">
+    <div class="brand">
+      <div class="brand-icon">🏪</div>
+      <h1>DukaanPro</h1>
+      <p>Retail Management · by Aayushmandhanya</p>
+    </div>
+    <div class="atabs">
+      <div class="atab on" onclick="switchTab('l')">Login</div>
+      <div class="atab" onclick="switchTab('r')">Register</div>
+    </div>
+    <div id="form-login">
+      <div class="fg"><label>Email Address</label><input id="l-email" type="email" placeholder="your@email.com" onkeydown="if(event.key==='Enter')doLogin()"/></div>
+      <div class="fg"><label>Password</label><input id="l-pass" type="password" placeholder="Your password" onkeydown="if(event.key==='Enter')doLogin()"/></div>
+      <button class="btn btn-p btn-w100" onclick="doLogin()">Login to DukaanPro</button>
+      <div class="sep">or</div>
+      <button class="btn btn-google" onclick="doGoogle()">
+        <svg width="16" height="16" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.5 0 6.6 1.3 9 3.4l6.7-6.7C35.8 2.5 30.2 0 24 0 14.7 0 6.7 5.5 2.7 13.5l7.8 6.1C12.4 13.6 17.8 9.5 24 9.5z"/><path fill="#34A853" d="M46.5 24.5c0-1.6-.1-3.1-.4-4.5H24v8.5h12.7c-.6 3-2.3 5.5-4.8 7.2l7.6 5.9c4.4-4.1 7-10.1 7-17.1z"/><path fill="#FBBC05" d="M10.5 28.7c-.6-1.8-1-3.7-1-5.7s.3-3.9 1-5.7l-7.8-6.1C.9 15.3 0 19.5 0 24s.9 8.7 2.7 12.5l7.8-7.8z"/><path fill="#4285F4" d="M24 48c6.2 0 11.4-2 15.2-5.5l-7.6-5.9c-2 1.4-4.6 2.2-7.6 2.2-6.2 0-11.5-4.2-13.4-9.9l-7.9 6.1C6.7 42.5 14.7 48 24 48z"/></svg>
+        Continue with Google
+      </button>
+    </div>
+    <div id="form-reg" style="display:none">
+      <div class="fg"><label>Full Name</label><input id="r-name" placeholder="Your full name"/></div>
+      <div class="fg"><label>Email Address</label><input id="r-email" type="email" placeholder="your@email.com"/></div>
+      <div class="fg"><label>Password (min 6 characters)</label><input id="r-pass" type="password" placeholder="Strong password"/></div>
+      <button class="btn btn-p btn-w100" onclick="doRegister()">Create Account</button>
+    </div>
+    <div class="errmsg" id="auth-err"></div>
+  </div>
+</div>
+
+<!-- ══════ CHOICE ══════ -->
+<div class="scr" id="sc" style="display:none">
+  <div class="choice-box">
+    <h2 style="font-size:20px;font-weight:800">👋 Welcome!</h2>
+    <p class="muted mt2" id="choice-greet">What would you like to do?</p>
+    <div class="choice-grid">
+      <div class="choice-card" onclick="goCreate()"><div class="emo">🏪</div><h3>Create New Shop</h3><p>Start your own shop account</p></div>
+      <div class="choice-card" onclick="revealJoin()"><div class="emo">🔗</div><h3>Join Existing Shop</h3><p>Enter team code to join</p></div>
+    </div>
+    <div id="join-section" style="display:none;margin-top:20px">
+      <div class="fg"><label>Shop Code (6 characters)</label>
+        <input id="join-code" placeholder="ABC123" maxlength="6" style="text-transform:uppercase;letter-spacing:5px;text-align:center;font-size:22px;font-weight:800"/>
+      </div>
+      <div class="fg"><label>Your Role</label><select id="join-role"><option value="staff">Staff</option><option value="manager">Manager</option></select></div>
+      <button class="btn btn-p btn-w100" onclick="doJoin()">Join Shop →</button>
+    </div>
+    <div class="errmsg" id="join-err"></div>
+  </div>
+</div>
+
+<!-- ══════ SETUP ══════ -->
+<div class="scr" id="ss" style="display:none">
+  <div class="setup-box">
+    <h2 style="font-size:20px;font-weight:800;margin-bottom:4px">🏪 Setup Your Shop</h2>
+    <p class="muted mb3">Fill in details — used on QR codes and customer catalogue.</p>
+    <div class="g2">
+      <div class="fg"><label>Shop Name *</label><input id="ss-name" placeholder="e.g. Aayushman Store"/></div>
+      <div class="fg"><label>Owner Name</label><input id="ss-owner" placeholder="Your name"/></div>
+      <div class="fg"><label>Phone *</label><input id="ss-phone" placeholder="+91 XXXXX XXXXX"/></div>
+      <div class="fg"><label>GST / License No.</label><input id="ss-gst" placeholder="Optional"/></div>
+    </div>
+    <div class="fg"><label>Full Address (for Google Maps)</label><input id="ss-addr" placeholder="Shop No., Street, City, State, PIN"/></div>
+    <div class="fg"><label>UPI ID (for payment QR)</label><input id="ss-upi" placeholder="name@upi  or  9876543210@paytm" oninput="prevQR()"/></div>
+    <div class="qrprev-box" id="qrprev"><p style="font-size:11px;color:var(--muted);margin-bottom:8px">Payment QR Preview</p><div id="qrprev-el"></div></div>
+    <button class="btn btn-p btn-w100 mt4" onclick="saveSetup()">Save & Open DukaanPro →</button>
+    <div class="errmsg" id="setup-err"></div>
+  </div>
+</div>
+
+<div class="mob-bg" id="mob-bg" onclick="closeSide()"></div>
+
+<!-- ══════ APP ══════ -->
+<div id="app">
+  <div class="sidebar" id="sidebar">
+    <div class="s-logo">
+      <h2 id="s-name">DukaanPro</h2>
+      <p id="s-phone"></p>
+      <div class="s-code" id="s-code" onclick="copyCode()">CODE: ------</div>
+    </div>
+    <nav class="s-nav">
+      <div class="s-sec">Overview</div>
+      <div class="s-item on" onclick="go('dashboard')"><span class="s-icon">📊</span> Dashboard</div>
+      <div class="s-sec">Sales</div>
+      <div class="s-item" onclick="go('sale')"><span class="s-icon">🧾</span> New Sale</div>
+      <div class="s-item" onclick="go('history')"><span class="s-icon">📅</span> Sales History</div>
+      <div class="s-item" onclick="go('credit')"><span class="s-icon">💳</span> Credit Ledger</div>
+      <div class="s-sec">Inventory</div>
+      <div class="s-item" onclick="go('stock')"><span class="s-icon">📦</span> Stock Board</div>
+      <div class="s-item" onclick="go('addstock')"><span class="s-icon">➕</span> Add Stock</div>
+      <div class="s-sec">Business</div>
+      <div class="s-item" onclick="go('expenses')"><span class="s-icon">💸</span> Expenses</div>
+      <div class="s-item" onclick="go('catalogue')"><span class="s-icon">📱</span> Catalogue QR</div>
+      <div class="s-item" onclick="go('reports')"><span class="s-icon">📈</span> Reports</div>
+      <div class="s-item" onclick="go('calendar')"><span class="s-icon">📆</span> Day-wise Report</div>
+      <div class="s-sec">Account</div>
+      <div class="s-item" onclick="go('team')"><span class="s-icon">👥</span> Team</div>
+      <div class="s-item" onclick="go('settings')"><span class="s-icon">⚙️</span> Settings</div>
+      <div class="s-item" onclick="doLogout()" style="color:rgba(248,113,113,.8)"><span class="s-icon">🚪</span> Logout</div>
+    </nav>
+  </div>
+
+  <div class="main" id="main-area">
+    <div class="topbar">
+      <div class="row ac gap3">
+        <div class="mob-toggle" onclick="openSide()">☰</div>
+        <div>
+          <div class="page-title" id="pg-title">Dashboard</div>
+          <div class="page-sub" id="pg-sub"></div>
+        </div>
+      </div>
+      <div class="row ac gap2" style="position:relative">
+        <div class="sb">
+          <input id="gs" placeholder="Search products..." oninput="gSearch(this.value)"/>
+          <div class="search-drop" id="sd"></div>
+        </div>
+        <div class="badge b-blue" id="topdate"></div>
+      </div>
+    </div>
+
+    <!-- DASHBOARD -->
+    <div class="page on" id="page-dashboard">
+      <div class="today-box">
+        <div class="label">Today's Revenue</div>
+        <div class="amount" id="d-rev">₹0</div>
+        <div class="breakdown">
+          <div class="bk-item">💵 Cash: <b id="d-cash">₹0</b></div>
+          <div class="bk-item">📱 UPI: <b id="d-upi">₹0</b></div>
+          <div class="bk-item">🔖 Credit: <b id="d-cred">₹0</b></div>
+        </div>
+      </div>
+      <div class="stat-grid">
+        <div class="stat-card"><div class="stat-label">Stock Items</div><div class="stat-val s-blue" id="d-stk">0</div></div>
+        <div class="stat-card"><div class="stat-label">Pending Credit</div><div class="stat-val s-red" id="d-pcred">₹0</div></div>
+        <div class="stat-card"><div class="stat-label">Today's Sales</div><div class="stat-val s-green" id="d-cnt">0</div></div>
+        <div class="stat-card"><div class="stat-label">Monthly Revenue</div><div class="stat-val" id="d-month">₹0</div></div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px" id="dash-bottom">
+        <div class="card"><div class="section-title">Recent Sales</div><div id="d-recent"></div></div>
+        <div class="card"><div class="section-title">⚠️ Low Stock</div><div id="d-lowstk"></div></div>
+      </div>
+    </div>
+
+    <!-- NEW SALE -->
+    <div class="page" id="page-sale">
+      <div class="card" style="max-width:680px">
+        <div class="g2 mb4">
+          <div class="fg" style="margin:0"><label>Customer Name</label><input id="ns-cn" placeholder="Walk-in (optional)"/></div>
+          <div class="fg" style="margin:0"><label>Phone</label><input id="ns-cp" placeholder="+91... (optional)"/></div>
+        </div>
+        <div class="fg mb3">
+          <label>Add Products — Click below or type to search</label>
+          <input id="ns-srch" placeholder="Type product name to search, or click below to browse all..." oninput="saleSearchInput(this.value)" onfocus="saleSearchInput(this.value||' ')" autocomplete="off"/>
+          <div id="ns-res" class="prod-search-results mt2" style="display:none"></div>
+        </div>
+        <div id="ns-list"></div>
+        <div id="ns-empty" class="empty" style="padding:16px"><div class="empty-icon">🛒</div>Search and add products to start billing</div>
+        <div id="ns-totals" style="display:none">
+          <div class="divider"></div>
+          <div class="row ac" style="justify-content:space-between;margin-bottom:10px;font-size:13px"><span style="color:var(--muted)">Subtotal</span><span id="ns-sub">₹0</span></div>
+          <div class="row ac gap2 mb3">
+            <span style="font-size:13px;white-space:nowrap;color:var(--muted)">Discount %</span>
+            <input type="number" id="ns-disc" value="0" min="0" max="100" oninput="recalc()" style="width:78px"/>
+            <span style="font-size:13px;color:var(--r);font-weight:700" id="ns-damt"></span>
+          </div>
+          <div class="row" style="justify-content:space-between;font-size:20px;font-weight:800;border-top:2px solid var(--bd);padding-top:14px"><span>Total</span><span id="ns-total" style="color:var(--g)">₹0</span></div>
+          <div class="mt3">
+            <label style="display:block;margin-bottom:8px">Payment Mode</label>
+            <div class="pay-btns">
+              <button class="pay-btn on" data-m="cash" onclick="setPay('cash')">💵 Cash</button>
+              <button class="pay-btn" data-m="upi" onclick="setPay('upi')">📱 UPI</button>
+              <button class="pay-btn" data-m="credit" onclick="setPay('credit')">🔖 Credit</button>
+            </div>
+          </div>
+          <button class="btn btn-g btn-w100 mt4" onclick="doneSale()" style="padding:14px;font-size:15px;border-radius:var(--radius)">✅ Complete Sale</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- HISTORY -->
+    <div class="page" id="page-history">
+      <div class="row gap2 mb3" style="flex-wrap:wrap">
+        <input type="date" id="hdate" style="width:180px" onchange="renderHistory()"/>
+        <select id="hmode" style="width:150px" onchange="renderHistory()"><option value="">All Modes</option><option>cash</option><option>upi</option><option>credit</option></select>
+        <button class="btn btn-o btn-sm" onclick="document.getElementById('hdate').value='';document.getElementById('hmode').value='';renderHistory()">Clear</button>
+      </div>
+      <div class="tw">
+        <table><thead><tr><th>Date/Time</th><th>Customer</th><th>Items</th><th>Total</th><th>Mode</th><th>Status</th><th>By</th><th>Action</th></tr></thead>
+        <tbody id="hist-body"></tbody></table>
+      </div>
+    </div>
+
+    <!-- CREDIT -->
+    <div class="page" id="page-credit">
+      <div class="stat-card mb3" style="max-width:280px"><div class="stat-label">Total Pending Credit</div><div class="stat-val s-red mt2" id="tot-cred">₹0</div></div>
+      <div id="cred-list"></div>
+    </div>
+
+    <!-- STOCK -->
+    <div class="page" id="page-stock">
+      <div class="row gap2 mb3" style="flex-wrap:wrap">
+        <div class="sb"><input id="stk-srch" placeholder="Search stock..." oninput="renderStock()"/></div>
+        <select id="stk-cat" style="width:160px" onchange="renderStock()"><option value="">All Categories</option><option>Kirana</option><option>Kapda</option><option>Mahua</option><option>Other</option></select>
+        <button class="btn btn-o btn-sm" onclick="clearStkFilter()">Clear</button>
+      </div>
+      <div id="stk-board"></div>
+    </div>
+
+    <!-- ADD STOCK -->
+    <div class="page" id="page-addstock">
+      <div class="card" style="max-width:620px">
+        <div class="section-title">➕ Add New Stock Item</div>
+        <div class="g3">
+          <div class="fg"><label>Category *</label><select id="as-cat"><option>Kirana</option><option>Kapda</option><option>Mahua</option><option>Other</option></select></div>
+          <div class="fg"><label>Brand / Company</label><input id="as-brand" placeholder="e.g. Tata"/></div>
+          <div class="fg"><label>Product Name *</label><input id="as-name" placeholder="e.g. Salt 1kg"/></div>
+          <div class="fg"><label>Quantity</label><input type="number" id="as-qty" placeholder="0"/></div>
+          <div class="fg"><label>Unit</label><select id="as-unit"><option>Piece</option><option>Kg</option><option>Litre</option><option>Packet</option><option>Box</option><option>Dozen</option><option>Bundle</option></select></div>
+          <div class="fg"><label>Purchase Price ₹</label><input type="number" id="as-buy" placeholder="0"/></div>
+          <div class="fg"><label>Selling Price ₹ *</label><input type="number" id="as-sell" placeholder="0"/></div>
+          <div class="fg"><label>Supplier Name</label><input id="as-sup" placeholder="Supplier"/></div>
+          <div class="fg"><label>Supplier Phone</label><input id="as-suph" placeholder="+91..."/></div>
+        </div>
+        <div class="fg"><label>Notes (expiry, batch, etc.)</label><input id="as-notes" placeholder="Optional"/></div>
+        <!-- PURCHASE PAYMENT MODE -->
+        <div class="fg" style="background:var(--bg);border-radius:var(--radius-sm);padding:14px;border:1px solid var(--bd)">
+          <label style="margin-bottom:10px;display:block">How did you pay for this stock?</label>
+          <div class="pay-btns">
+            <button class="pay-btn on" id="sp-cash" data-sm="cash" onclick="setStockPay('cash')">💵 Cash</button>
+            <button class="pay-btn" id="sp-upi" data-sm="upi" onclick="setStockPay('upi')">📱 UPI</button>
+            <button class="pay-btn" id="sp-credit" data-sm="credit" onclick="setStockPay('credit')">🔖 Credit (Baaki)</button>
+          </div>
+          <div id="sp-credit-section" style="display:none;margin-top:12px">
+            <p style="font-size:12px;color:var(--w);margin-bottom:8px">⚠️ Credit means you owe money to the supplier — this will be tracked.</p>
+            <div class="g2">
+              <div class="fg" style="margin:0"><label>Amount to Pay Later ₹</label><input type="number" id="sp-credit-amt" placeholder="0"/></div>
+              <div class="fg" style="margin:0"><label>Due Date (optional)</label><input type="date" id="sp-due-date"/></div>
+            </div>
+          </div>
+        </div>
+        <button class="btn btn-p mt3" onclick="addStock()">➕ Add to Stock</button>
+      </div>
+      <div class="card mt4" style="max-width:620px"><div class="section-title">Recent Additions</div><div id="rec-stk"></div></div>
+    </div>
+
+    <!-- EXPENSES -->
+    <div class="page" id="page-expenses">
+      <div class="card mb4" style="max-width:580px">
+        <div class="section-title">💸 Record Expense</div>
+        <div class="g2">
+          <div class="fg"><label>What was purchased</label><input id="ex-n" placeholder="e.g. Electricity bill"/></div>
+          <div class="fg"><label>Amount ₹</label><input type="number" id="ex-a" placeholder="0"/></div>
+          <div class="fg"><label>Bought From</label><input id="ex-f" placeholder="Vendor / supplier"/></div>
+          <div class="fg"><label>Their Phone</label><input id="ex-p" placeholder="+91..."/></div>
+          <div class="fg"><label>Payment Mode</label><select id="ex-m"><option>Cash</option><option>UPI</option><option>Bank Transfer</option><option>Credit</option></select></div>
+          <div class="fg"><label>Date</label><input type="date" id="ex-d"/></div>
+        </div>
+        <div class="fg"><label>Notes</label><input id="ex-no" placeholder="Optional"/></div>
+        <button class="btn btn-p" onclick="addExp()">Save Expense</button>
+      </div>
+      <div class="tw"><table><thead><tr><th>Date</th><th>Item</th><th>From</th><th>Phone</th><th>Mode</th><th>Amount</th></tr></thead><tbody id="exp-body"></tbody></table></div>
+    </div>
+
+    <!-- CATALOGUE QR -->
+    <div class="page" id="page-catalogue">
+      <div class="row ac gap3 mb3" style="flex-wrap:wrap">
+        <h2 style="font-size:18px;font-weight:700;flex:1">📱 Customer QR Code Page</h2>
+        <button class="btn btn-o btn-sm" onclick="window.print()">🖨️ Print</button>
+        <button class="btn btn-p btn-sm" onclick="shareQR()">📤 Share</button>
+      </div>
+      <p class="muted mb4">One QR code shows your shop info, phone, location, and all products. Share with customers to let them see what you sell.</p>
+      <div style="display:grid;grid-template-columns:auto 1fr;gap:24px;align-items:start;flex-wrap:wrap">
+        <div>
+          <p style="font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">Scan This QR</p>
+          <div style="background:#fff;padding:12px;border-radius:var(--radius);border:1px solid var(--bd);display:inline-block"><div id="cat-qr-el"></div></div>
+          <p style="font-size:11px;color:var(--muted);margin-top:8px;max-width:140px;text-align:center">Opens shop page with products & location</p>
+          <button class="btn btn-p btn-sm mt3" style="width:140px" onclick="copyQRLink()">🔗 Copy Link</button>
+        </div>
+        <div class="qr-page" id="cat-preview">
+          <div class="qr-page-top">
+            <h2 id="qr-shopname">Shop Name</h2>
+            <p id="qr-shopphone">Phone</p>
+            <a id="qr-location-btn" class="qr-location-btn" href="#" target="_blank">📍 Find Us on Google Maps</a>
+          </div>
+          <div class="qr-products-section" id="qr-products"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- REPORTS -->
+    <div class="page" id="page-reports">
+      <div class="stat-grid mb4">
+        <div class="stat-card"><div class="stat-label">All-time Revenue</div><div class="stat-val s-green" id="rp-rev">₹0</div></div>
+        <div class="stat-card"><div class="stat-label">Total Expenses</div><div class="stat-val s-red" id="rp-exp">₹0</div></div>
+        <div class="stat-card"><div class="stat-label">Net Profit</div><div class="stat-val" id="rp-prof">₹0</div></div>
+        <div class="stat-card"><div class="stat-label">Pending Credit</div><div class="stat-val s-red" id="rp-cred">₹0</div></div>
+      </div>
+      <div class="card mb4"><div class="section-title">💰 Payment Breakdown</div><div id="rp-pay"></div></div>
+      <div class="card"><div class="section-title">🏆 Top Selling Products</div><div id="rp-top"></div></div>
+    </div>
+
+    <!-- CALENDAR / DAY-WISE REPORT -->
+    <div class="page" id="page-calendar">
+      <div class="cal-wrap">
+        <div class="cal-nav">
+          <button onclick="calMove(-1)">‹</button>
+          <h3 id="cal-month">Month Year</h3>
+          <button onclick="calMove(1)">›</button>
+        </div>
+        <div class="cal-grid" id="cal-grid"></div>
+      </div>
+      <div id="day-report-area"></div>
+    </div>
+
+    <!-- TEAM -->
+    <div class="page" id="page-team">
+      <div class="card mb4" style="max-width:540px">
+        <div class="section-title">🔗 Your Shop Code</div>
+        <p class="muted mb3">Share this code with staff so they can join your shop account.</p>
+        <div class="row ac gap2" style="background:var(--bg);border-radius:var(--radius-sm);padding:14px">
+          <div style="font-size:30px;font-weight:900;letter-spacing:7px;color:var(--p);font-family:monospace;flex:1" id="team-code">------</div>
+          <button class="btn btn-o btn-sm" onclick="copyCode()">📋 Copy</button>
+        </div>
+        <p class="muted mt2" style="font-size:11px">Staff: Open DukaanPro → Register → "Join Existing Shop" → enter this code</p>
+      </div>
+      <div class="card" style="max-width:540px"><div class="section-title">👥 Team Members</div><div id="team-list"></div></div>
+    </div>
+
+    <!-- SETTINGS -->
+    <div class="page" id="page-settings">
+      <div class="card" style="max-width:560px">
+        <div class="section-title">⚙️ Shop Settings</div>
+        <div class="g2">
+          <div class="fg"><label>Shop Name</label><input id="set-n"/></div>
+          <div class="fg"><label>Owner Name</label><input id="set-o"/></div>
+          <div class="fg"><label>Phone</label><input id="set-p"/></div>
+          <div class="fg"><label>GST No.</label><input id="set-g"/></div>
+        </div>
+        <div class="fg"><label>Address</label><input id="set-a"/></div>
+        <div class="fg"><label>UPI ID</label><input id="set-u" oninput="refreshSetQR()"/></div>
+        <button class="btn btn-p" onclick="saveSettings()">Save Settings</button>
+        <div class="mt4" style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+          <div style="border:1px solid var(--bd);border-radius:var(--radius);padding:14px;text-align:center"><p style="font-size:12px;font-weight:700;margin-bottom:10px">💳 UPI Payment QR</p><div id="set-upi-qr"></div></div>
+          <div style="border:1px solid var(--bd);border-radius:var(--radius);padding:14px;text-align:center"><p style="font-size:12px;font-weight:700;margin-bottom:10px">📍 Google Maps QR</p><div id="set-map-qr"></div></div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- end main-area -->
+</div><!-- end app -->
+
+<!-- EDIT STOCK MODAL -->
+<div class="overlay" id="edit-ov">
+  <div class="modal">
+    <div class="modal-head"><h3>✏️ Edit Product</h3><button class="mclose" onclick="closeEdit()">✕</button></div>
+    <input type="hidden" id="e-id"/>
+    <div class="g2">
+      <div class="fg"><label>Name</label><input id="e-name"/></div>
+      <div class="fg"><label>Brand</label><input id="e-brand"/></div>
+      <div class="fg"><label>Category</label><select id="e-cat"><option>Kirana</option><option>Kapda</option><option>Mahua</option><option>Other</option></select></div>
+      <div class="fg"><label>Unit</label><select id="e-unit"><option>Piece</option><option>Kg</option><option>Litre</option><option>Packet</option><option>Box</option><option>Dozen</option><option>Bundle</option></select></div>
+      <div class="fg"><label>Quantity</label><input type="number" id="e-qty"/></div>
+      <div class="fg"><label>Buy Price ₹</label><input type="number" id="e-buy"/></div>
+      <div class="fg"><label>Sell Price ₹</label><input type="number" id="e-sell"/></div>
+      <div class="fg"><label>Supplier</label><input id="e-sup"/></div>
+    </div>
+    <div class="fg"><label>Notes</label><input id="e-notes"/></div>
+    <div class="modal-foot">
+      <button class="btn btn-o" onclick="closeEdit()">Cancel</button>
+      <button class="btn btn-g" onclick="saveEdit()">✅ Save Changes</button>
+    </div>
+  </div>
+</div>
+
+<!-- CREDIT SETTLEMENT MODAL -->
+<div class="overlay" id="settle-ov">
+  <div class="modal">
+    <div class="modal-head"><h3>💳 Settle Credit Payment</h3><button class="mclose" onclick="closeSettle()">✕</button></div>
+    <input type="hidden" id="settle-id"/>
+    <div style="background:var(--bg);border-radius:var(--radius-sm);padding:14px;margin-bottom:16px">
+      <div style="font-weight:700;font-size:15px" id="settle-name"></div>
+      <div style="color:var(--r);font-size:22px;font-weight:800;margin-top:4px" id="settle-amt"></div>
+    </div>
+    <div class="fg"><label>Payment Received Via</label>
+      <div class="pay-btns">
+        <button class="pay-btn on" id="stl-cash" data-s="cash" onclick="setSettlePay('cash')">💵 Cash</button>
+        <button class="pay-btn" id="stl-upi" data-s="upi" onclick="setSettlePay('upi')">📱 UPI</button>
+      </div>
+    </div>
+    <div class="fg"><label>Amount Received ₹</label><input type="number" id="settle-recv-amt" placeholder="Enter amount received"/></div>
+    <div class="fg"><label>Note (optional)</label><input id="settle-note" placeholder="e.g. Paid at shop, Phone transfer..."/></div>
+    <div class="modal-foot">
+      <button class="btn btn-o" onclick="closeSettle()">Cancel</button>
+      <button class="btn btn-g" onclick="doSettle()">✅ Confirm Settlement</button>
+    </div>
+  </div>
+</div>
+
+<!-- CHAT -->
+<button class="chat-fab" id="chat-fab" onclick="toggleChat()">🤖</button>
+<div class="chat-panel" id="chat-panel">
+  <div class="chat-head">
+    <h4>🤖 DukaanBot — Smart AI</h4>
+    <button onclick="toggleChat()" style="background:none;border:none;color:#fff;cursor:pointer;font-size:18px;line-height:1">✕</button>
+  </div>
+  <div class="chat-msgs" id="chat-msgs">
+    <div class="cmsg bot">Hi! I'm DukaanBot 🤖<br><br>
+      <b>I can do real actions:</b><br>
+      ➕ "add rice 50 kg buy 38 sell 45"<br>
+      ✏️ "update oil price to 150"<br>
+      💳 "Ramesh credit 500"<br>
+      ✓ "Ramesh paid" or "Ramesh paid via UPI"<br>
+      🔍 "price of salt" | "today sales"<br>
+      📊 "total credit" | "low stock"
+    </div>
+  </div>
+  <div class="chat-in">
+    <input id="chat-inp" placeholder="Ask or command..." onkeydown="if(event.key==='Enter')sendChat()"/>
+    <button onclick="sendChat()">➤</button>
+  </div>
+</div>
+
+<script>
+// ══════════════════════════════════════════════════════
+// FIREBASE
+// ══════════════════════════════════════════════════════
+firebase.initializeApp({
+  apiKey:"AIzaSyA5X8cGNOldnQxNGPo8I6B5T2x6f0ZP-UM",
+  authDomain:"versatile-ai-assistant-bz1qu.firebaseapp.com",
+  projectId:"versatile-ai-assistant-bz1qu",
+  storageBucket:"versatile-ai-assistant-bz1qu.firebasestorage.app",
+  messagingSenderId:"359325754309",
+  appId:"1:359325754309:web:0a48175c84a45ebb15e1ac"
+});
+const auth=firebase.auth(), db=firebase.firestore(), FV=firebase.firestore.FieldValue;
+db.enablePersistence({synchronizeTabs:true}).catch(()=>{});
+
+// ══════════════════════════════════════════════════════
+// STATE
+// ══════════════════════════════════════════════════════
+let CU=null,SD={},SID=null,ROLE='owner';
+let SKD=[],SALD=[],EXPD=[];
+let SITEMS=[],PAYMODE='cash',STOCKPAY='cash',SETTLEPAY='cash';
+let CHATOPEN=false, UNSUBS=[];
+let CAL_YEAR=new Date().getFullYear(), CAL_MONTH=new Date().getMonth();
+let CAL_SEL=null;
+
+const fm=n=>'₹'+Math.round(n||0).toLocaleString('en-IN');
+const tod=()=>new Date().toISOString().split('T')[0];
+const gc=()=>Math.random().toString(36).substr(2,6).toUpperCase();
+const xe=s=>String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+
+// ══════════════════════════════════════════════════════
+// TOAST
+// ══════════════════════════════════════════════════════
+function toast(msg,t='ok'){
+  const el=document.getElementById('notif');
+  el.textContent=msg; el.className='notif show '+t;
+  setTimeout(()=>el.className='notif',3500);
+}
+
+// ══════════════════════════════════════════════════════
+// SCREEN
+// ══════════════════════════════════════════════════════
+function scr(id){
+  ['sa','sc','ss','app'].forEach(s=>{
+    const el=document.getElementById(s); if(!el)return;
+    el.style.display=(s===id)?(s==='app'?'block':'flex'):'none';
+  });
+  const fab=document.getElementById('chat-fab');
+  if(fab)fab.style.display=(id==='app')?'flex':'none';
+}
+
+// ══════════════════════════════════════════════════════
+// AUTH
+// ══════════════════════════════════════════════════════
+function switchTab(t){
+  document.querySelectorAll('.atab').forEach((el,i)=>el.classList.toggle('on',(i===0&&t==='l')||(i===1&&t==='r')));
+  document.getElementById('form-login').style.display=t==='l'?'':'none';
+  document.getElementById('form-reg').style.display=t==='r'?'':'none';
+  document.getElementById('auth-err').style.display='none';
+}
+function ae(msg){const el=document.getElementById('auth-err');el.textContent=msg;el.style.display='block';}
+
+async function doLogin(){
+  const e=document.getElementById('l-email').value.trim(),p=document.getElementById('l-pass').value;
+  if(!e||!p)return ae('Please enter email and password');
+  try{await auth.signInWithEmailAndPassword(e,p);}
+  catch(err){ae({'auth/user-not-found':'No account found. Please register.','auth/wrong-password':'Wrong password.','auth/invalid-email':'Invalid email.','auth/too-many-requests':'Too many attempts. Try later.'}[err.code]||err.message);}
+}
+
+async function doRegister(){
+  const n=document.getElementById('r-name').value.trim(),e=document.getElementById('r-email').value.trim(),p=document.getElementById('r-pass').value;
+  if(!n||!e||!p)return ae('Please fill all fields');
+  if(p.length<6)return ae('Password must be at least 6 characters');
+  try{
+    const c=await auth.createUserWithEmailAndPassword(e,p);
+    await c.user.updateProfile({displayName:n});
+    await db.collection('users').doc(c.user.uid).set({name:n,email:e,createdAt:FV.serverTimestamp()});
+  }catch(err){ae({'auth/email-already-in-use':'Email already registered. Please login.'}[err.code]||err.message);}
+}
+
+// Google login — opens external browser (works for APK via intent)
+function doGoogle(){
+  const provider=new firebase.auth.GoogleAuthProvider();
+  provider.setCustomParameters({prompt:'select_account'});
+  // For APK: use signInWithRedirect so it opens in browser
+  if(/android|webview|wv/i.test(navigator.userAgent)){
+    auth.signInWithRedirect(provider).catch(err=>ae('Google login error: '+err.message));
+  } else {
+    auth.signInWithPopup(provider).catch(err=>ae('Google login error: '+err.message));
+  }
+}
+
+// Handle redirect result (for APK after coming back)
+auth.getRedirectResult().then(result=>{
+  if(result&&result.user){}// will be handled by onAuthStateChanged
+}).catch(err=>{if(err.code!=='auth/no-auth-event')console.warn(err.message);});
+
+function doLogout(){if(confirm('Logout from DukaanPro?')){UNSUBS.forEach(u=>u&&u());UNSUBS=[];auth.signOut();}}
+
+auth.onAuthStateChanged(async user=>{
+  CU=user;
+  if(!user){scr('sa');return;}
+  const uref=db.collection('users').doc(user.uid);
+  try{
+    const snap=await uref.get();
+    if(!snap.exists) await uref.set({name:user.displayName||user.email,email:user.email,createdAt:FV.serverTimestamp()});
+    const d=(snap.exists?snap.data():{}) ;
+    if(d.shopId){SID=d.shopId;ROLE=d.role||'owner';await loadShop(SID);}
+    else{const f=await uref.get();const fd=f.data()||{};if(fd.shopId){SID=fd.shopId;ROLE=fd.role||'owner';await loadShop(SID);}else showChoice();}
+  }catch(e){console.warn(e.message);showChoice();}
+});
+
+// ══════════════════════════════════════════════════════
+// CHOICE / JOIN / SETUP
+// ══════════════════════════════════════════════════════
+function showChoice(){
+  scr('sc');
+  const n=CU?(CU.displayName||CU.email||'User'):'User';
+  document.getElementById('choice-greet').textContent=`Hello ${n.split(' ')[0]}! What would you like to do?`;
+}
+function goCreate(){scr('ss');}
+function revealJoin(){document.getElementById('join-section').style.display='';}
+
+async function doJoin(){
+  const code=document.getElementById('join-code').value.trim().toUpperCase(),role=document.getElementById('join-role').value;
+  if(code.length!==6)return jerr('Enter a valid 6-character shop code');
+  try{
+    const snap=await db.collection('shops').where('shopCode','==',code).limit(1).get();
+    if(snap.empty)return jerr('No shop found with this code.');
+    SID=snap.docs[0].id;ROLE=role;
+    const un=CU.displayName||CU.email;
+    await db.collection('shops').doc(SID).update({members:FV.arrayUnion({uid:CU.uid,name:un,email:CU.email,role,joinedAt:new Date().toISOString()})});
+    await db.collection('users').doc(CU.uid).set({shopId:SID,role,shopCode:code},{merge:true});
+    await loadShop(SID);
+  }catch(e){jerr('Error: '+e.message);}
+}
+function jerr(m){const el=document.getElementById('join-err');el.textContent=m;el.style.display='block';}
+
+function prevQR(){
+  const upi=document.getElementById('ss-upi').value.trim(),name=document.getElementById('ss-name').value.trim()||'Shop';
+  const prev=document.getElementById('qrprev'),el=document.getElementById('qrprev-el');
+  if(!upi){prev.style.display='none';return;}
+  prev.style.display='block';el.innerHTML='';
+  try{new QRCode(el,{text:`upi://pay?pa=${encodeURIComponent(upi)}&pn=${encodeURIComponent(name)}&cu=INR`,width:120,height:120});}catch(e){}
+}
+
+async function saveSetup(){
+  const name=document.getElementById('ss-name').value.trim(),phone=document.getElementById('ss-phone').value.trim();
+  if(!name||!phone)return serr('Shop name and phone are required');
+  const code=gc();
+  const un=CU.displayName||CU.email;
+  const ref=db.collection('shops').doc();
+  SID=ref.id;ROLE='owner';
+  try{
+    await ref.set({name,phone,owner:CU.uid,ownerName:un,ownerEmail:CU.email,gst:document.getElementById('ss-gst').value.trim(),address:document.getElementById('ss-addr').value.trim(),upi:document.getElementById('ss-upi').value.trim(),shopCode:code,members:[{uid:CU.uid,name:un,email:CU.email,role:'owner',joinedAt:new Date().toISOString()}],createdAt:FV.serverTimestamp()});
+    await db.collection('users').doc(CU.uid).set({shopId:SID,role:'owner',shopCode:code},{merge:true});
+    SD={name,phone,gst:document.getElementById('ss-gst').value.trim(),address:document.getElementById('ss-addr').value.trim(),upi:document.getElementById('ss-upi').value.trim(),shopCode:code};
+    launch();
+  }catch(e){serr('Error: '+e.message);}
+}
+function serr(m){const el=document.getElementById('setup-err');el.textContent=m;el.style.display='block';}
+
+// ══════════════════════════════════════════════════════
+// LOAD & LAUNCH
+// ══════════════════════════════════════════════════════
+async function loadShop(sid){
+  try{
+    const snap=await db.collection('shops').doc(sid).get();
+    if(!snap.exists){showChoice();return;}
+    SD=snap.data();SID=sid;launch();
+  }catch(e){if(SD&&SD.name)launch();else showChoice();}
+}
+
+function launch(){
+  scr('app');
+  document.getElementById('s-name').textContent=SD.name||'DukaanPro';
+  document.getElementById('s-phone').textContent=SD.phone||'';
+  document.getElementById('s-code').textContent='CODE: '+(SD.shopCode||'------');
+  document.getElementById('topdate').textContent=new Date().toLocaleDateString('en-IN',{weekday:'short',day:'numeric',month:'short'});
+  document.getElementById('ex-d').value=tod();
+  startListeners();
+  go('dashboard');
+}
+
+// ══════════════════════════════════════════════════════
+// LISTENERS
+// ══════════════════════════════════════════════════════
+function startListeners(){
+  UNSUBS.forEach(u=>u&&u());UNSUBS=[];
+  const sr=db.collection('shops').doc(SID);
+  UNSUBS.push(sr.collection('stock').orderBy('name').onSnapshot(s=>{SKD=s.docs.map(d=>({id:d.id,...d.data()}));renderStock();renderRecStk();rDash();},e=>{if(e.code==='permission-denied')toast('⚠️ Firestore Rules not set! Go to Settings.','wn');}));
+  UNSUBS.push(sr.collection('sales').orderBy('createdAt','desc').limit(300).onSnapshot(s=>{SALD=s.docs.map(d=>({id:d.id,...d.data()}));rDash();if(isOn('history'))renderHistory();if(isOn('credit'))renderCredit();if(CAL_SEL)renderDayReport(CAL_SEL);renderCal();},()=>{}));
+  UNSUBS.push(sr.collection('expenses').orderBy('createdAt','desc').onSnapshot(s=>{EXPD=s.docs.map(d=>({id:d.id,...d.data()}));if(isOn('expenses'))renderExp();},()=>{}));
+  UNSUBS.push(sr.onSnapshot(s=>{if(s.exists){SD={...SD,...s.data()};document.getElementById('s-name').textContent=SD.name||'DukaanPro';document.getElementById('s-phone').textContent=SD.phone||'';}}));
+}
+function isOn(p){const el=document.getElementById('page-'+p);return el&&el.classList.contains('on');}
+
+// ══════════════════════════════════════════════════════
+// NAV
+// ══════════════════════════════════════════════════════
+const PTITLES={dashboard:'Dashboard',sale:'New Sale',history:'Sales History',credit:'Credit Ledger',stock:'Stock Board',addstock:'Add Stock',expenses:'Expenses',catalogue:'Catalogue & QR',reports:'Reports',calendar:'Day-wise Report',team:'Team',settings:'Settings'};
+function go(p){
+  document.querySelectorAll('.page').forEach(el=>el.classList.remove('on'));
+  document.querySelectorAll('.s-item').forEach(el=>el.classList.remove('on'));
+  const pg=document.getElementById('page-'+p);if(pg)pg.classList.add('on');
+  document.querySelectorAll('.s-item').forEach(el=>{if((el.getAttribute('onclick')||'').includes("'"+p+"'"))el.classList.add('on');});
+  document.getElementById('pg-title').textContent=PTITLES[p]||p;
+  document.getElementById('pg-sub').textContent=SD.name||'';
+  closeSide();
+  document.getElementById('sd').style.display='none';
+  ({dashboard:rDash,history:renderHistory,credit:renderCredit,stock:renderStock,addstock:renderRecStk,expenses:renderExp,catalogue:renderCat,reports:renderReports,calendar:initCal,team:renderTeam,settings:popSettings}[p]||function(){})();
+}
+function openSide(){document.getElementById('sidebar').classList.add('open');document.getElementById('mob-bg').classList.add('on');}
+function closeSide(){document.getElementById('sidebar').classList.remove('open');document.getElementById('mob-bg').classList.remove('on');}
+
+// ══════════════════════════════════════════════════════
+// DASHBOARD
+// ══════════════════════════════════════════════════════
+function rDash(){
+  const t=tod(),ts=SALD.filter(s=>s.date===t);
+  const rev=ts.reduce((a,s)=>a+(s.total||0),0);
+  const cash=ts.filter(s=>s.payMode==='cash').reduce((a,s)=>a+(s.total||0),0);
+  const upi=ts.filter(s=>s.payMode==='upi').reduce((a,s)=>a+(s.total||0),0);
+  const cred=ts.filter(s=>s.payMode==='credit').reduce((a,s)=>a+(s.total||0),0);
+  const pcred=SALD.filter(s=>s.payMode==='credit'&&!s.paid).reduce((a,s)=>a+(s.total||0),0);
+  const mrev=SALD.filter(s=>(s.date||'').startsWith(t.substr(0,7))).reduce((a,s)=>a+(s.total||0),0);
+  tx('d-rev',fm(rev));tx('d-cash',fm(cash));tx('d-upi',fm(upi));tx('d-cred',fm(cred));
+  tx('d-stk',SKD.length);tx('d-pcred',fm(pcred));tx('d-cnt',ts.length);tx('d-month',fm(mrev));
+  const re=document.getElementById('d-recent');
+  re.innerHTML=SALD.slice(0,6).map(s=>`<div class="row ac" style="padding:8px 0;border-bottom:1px solid var(--bd)"><div style="flex:1"><b>${xe(s.customerName||'Walk-in')}</b> <span class="badge ${s.payMode==='cash'?'b-green':s.payMode==='upi'?'b-blue':'b-red'}">${s.payMode}</span><div class="muted" style="font-size:11px">${s.date||''} ${s.time||''}</div></div><b style="color:var(--g)">${fm(s.total)}</b></div>`).join('')||'<div class="empty"><div class="empty-icon">🧾</div>No sales yet</div>';
+  const lw=SKD.filter(s=>(s.qty||0)<=3);
+  document.getElementById('d-lowstk').innerHTML=lw.map(s=>`<div class="row ac" style="padding:7px 0;border-bottom:1px solid var(--bd)"><div style="flex:1"><b>${xe(s.name)}</b> <span class="badge b-yellow">${s.category}</span></div><span class="badge b-red">${s.qty} ${s.unit} left</span></div>`).join('')||'<div class="empty"><div class="empty-icon">✅</div>All stock ok</div>';
+}
+
+// ══════════════════════════════════════════════════════
+// STOCK — ADD & RENDER
+// ══════════════════════════════════════════════════════
+function setStockPay(m){
+  STOCKPAY=m;
+  document.querySelectorAll('[data-sm]').forEach(b=>b.classList.toggle('on',b.dataset.sm===m));
+  document.getElementById('sp-credit-section').style.display=m==='credit'?'':'none';
+}
+
+async function addStock(){
+  const name=document.getElementById('as-name').value.trim(),sell=parseFloat(document.getElementById('as-sell').value);
+  if(!name||!sell)return toast('Product name and selling price required','er');
+  const item={category:document.getElementById('as-cat').value,brand:document.getElementById('as-brand').value.trim(),name,qty:parseFloat(document.getElementById('as-qty').value)||0,unit:document.getElementById('as-unit').value,buyPrice:parseFloat(document.getElementById('as-buy').value)||0,sellPrice:sell,supplier:document.getElementById('as-sup').value.trim(),supplierPhone:document.getElementById('as-suph').value.trim(),notes:document.getElementById('as-notes').value.trim(),purchaseMode:STOCKPAY,addedBy:CU.displayName||CU.email,addedAt:FV.serverTimestamp()};
+  try{
+    await db.collection('shops').doc(SID).collection('stock').add(item);
+    // If paid by credit — record supplier payable
+    if(STOCKPAY==='credit'){
+      const credAmt=parseFloat(document.getElementById('sp-credit-amt').value)||sell*(parseFloat(document.getElementById('as-qty').value)||1);
+      if(credAmt>0){
+        await db.collection('shops').doc(SID).collection('payables').add({
+          supplierName:item.supplier||'Supplier',supplierPhone:item.supplierPhone||'',
+          productName:name,amount:credAmt,paid:false,
+          dueDate:document.getElementById('sp-due-date').value||'',
+          createdAt:FV.serverTimestamp()
+        });
+        toast(`✅ Stock added! Supplier credit ₹${credAmt} recorded as payable.`);
+      }
+    } else {
+      toast('✅ Stock item added!');
+    }
+    ['as-name','as-brand','as-qty','as-buy','as-sell','as-sup','as-suph','as-notes','sp-credit-amt','sp-due-date'].forEach(id=>document.getElementById(id).value='');
+    setStockPay('cash');
+  }catch(e){toast('Error: '+e.message,'er');}
+}
+
+function renderRecStk(){
+  const el=document.getElementById('rec-stk');if(!el)return;
+  el.innerHTML=SKD.slice(0,8).map(s=>`<div class="row ac" style="padding:8px 0;border-bottom:1px solid var(--bd)"><div style="flex:1"><b>${xe(s.name)}</b>${s.brand?` <span class="muted">(${xe(s.brand)})</span>`:''} <span class="badge b-blue">${s.category}</span><div class="muted" style="font-size:11px">${s.qty} ${s.unit} | ${xe(s.supplier||'No supplier')}</div></div><div style="text-align:right"><div style="font-weight:800;color:var(--p)">${fm(s.sellPrice)}</div><div class="muted" style="font-size:11px">Buy: ${fm(s.buyPrice)}</div></div></div>`).join('')||'<div class="muted">No stock added yet</div>';
+}
+
+function renderStock(){
+  const srch=(document.getElementById('stk-srch')||{value:''}).value.toLowerCase();
+  const catF=(document.getElementById('stk-cat')||{value:''}).value;
+  const fil=SKD.filter(s=>(!catF||s.category===catF)&&(!srch||s.name.toLowerCase().includes(srch)||(s.brand||'').toLowerCase().includes(srch)));
+  const el=document.getElementById('stk-board');if(!el)return;
+  if(!fil.length){el.innerHTML='<div class="empty"><div class="empty-icon">📦</div><a href="#" onclick="go(\'addstock\')">Add stock →</a></div>';return;}
+  const cats=['Kirana','Kapda','Mahua','Other'];
+  el.innerHTML='<div class="cat-grid">'+cats.map(cat=>{
+    const items=fil.filter(s=>s.category===cat);
+    if(!items.length&&catF)return'';
+    return`<div class="cat-box"><div class="cat-head ${cat.toLowerCase()}">${cat} <span class="badge b-dark">${items.length}</span></div><div class="cat-body">${items.map(s=>`<div class="row ac" style="padding:10px 16px;border-bottom:1px solid var(--bd)"><div style="flex:1"><div style="font-weight:700;font-size:13px">${xe(s.name)}</div><div class="muted" style="font-size:11px">${s.brand?xe(s.brand)+' | ':''}${s.qty} ${s.unit}</div></div><div style="text-align:right"><div style="font-weight:800;color:var(--p)">${fm(s.sellPrice)}</div><button class="btn btn-o btn-sm" style="margin-top:4px" onclick="openEdit('${s.id}')">✏️ Edit</button></div></div>`).join('')||'<div class="muted" style="padding:14px;font-size:13px">No items</div>'}</div></div>`;
+  }).join('')+'</div>';
+}
+function clearStkFilter(){document.getElementById('stk-srch').value='';document.getElementById('stk-cat').value='';renderStock();}
+
+function openEdit(id){
+  const s=SKD.find(x=>x.id===id);if(!s)return;
+  ['id','name','brand','cat','unit','qty','buy','sell','sup','notes'].forEach((k,i)=>{
+    const el=document.getElementById('e-'+k);
+    if(el)el.value=[id,s.name,s.brand,s.category,s.unit,s.qty,s.buyPrice,s.sellPrice,s.supplier,s.notes][i]||'';
+  });
+  document.getElementById('edit-ov').classList.add('on');
+}
+async function saveEdit(){
+  const id=document.getElementById('e-id').value,n=document.getElementById('e-name').value.trim(),sp=parseFloat(document.getElementById('e-sell').value);
+  if(!n||!sp)return toast('Name and selling price required','er');
+  try{
+    await db.collection('shops').doc(SID).collection('stock').doc(id).update({name:n,brand:document.getElementById('e-brand').value.trim(),category:document.getElementById('e-cat').value,unit:document.getElementById('e-unit').value,qty:parseFloat(document.getElementById('e-qty').value)||0,buyPrice:parseFloat(document.getElementById('e-buy').value)||0,sellPrice:sp,supplier:document.getElementById('e-sup').value.trim(),notes:document.getElementById('e-notes').value.trim(),updatedAt:FV.serverTimestamp(),updatedBy:CU.displayName||CU.email});
+    closeEdit();toast('✅ Product updated!');
+  }catch(e){toast('Error: '+e.message,'er');}
+}
+function closeEdit(){document.getElementById('edit-ov').classList.remove('on');}
+
+// ══════════════════════════════════════════════════════
+// SALES
+// ══════════════════════════════════════════════════════
+// Show all products on focus or empty input, filter on type
+function saleSearchInput(q){
+  const el=document.getElementById('ns-res');
+  const ql=(q||'').trim().toLowerCase();
+  const m=ql===''||ql===' '
+    ? SKD.slice(0,40)
+    : SKD.filter(s=>s.name.toLowerCase().includes(ql)||(s.brand||'').toLowerCase().includes(ql)||(s.category||'').toLowerCase().includes(ql));
+  if(!m.length){el.style.display='none';return;}
+  el.style.display='block';
+  el.innerHTML=m.map(s=>`<div class="psr-item" onclick="addSaleItem('${s.id}','${xe2(s.name)}',${s.sellPrice},${s.qty||0},'${xe2(s.unit||'Piece')}')"><div class="pname">${xe(s.name)}${s.brand?` <span style="color:var(--muted);font-size:11px">(${xe(s.brand)})</span>`:''}</div><span class="badge b-blue pcat">${s.category}</span><span class="pprice">${fm(s.sellPrice)}</span></div>`).join('');
+}
+
+function addSaleItem(id,name,price,maxQty,unit){
+  document.getElementById('ns-res').style.display='none';
+  document.getElementById('ns-srch').value='';
+  const ex=SITEMS.find(i=>i.id===id);
+  if(ex)ex.qty++;
+  else SITEMS.push({id,name,price:parseFloat(price),qty:1,maxQty,unit});
+  renderSaleItems();
+}
+
+function renderSaleItems(){
+  const le=document.getElementById('ns-list'),em=document.getElementById('ns-empty'),tot=document.getElementById('ns-totals');
+  if(!SITEMS.length){le.innerHTML='';em.style.display='block';tot.style.display='none';return;}
+  em.style.display='none';tot.style.display='block';
+  le.innerHTML=SITEMS.map((it,i)=>`<div class="sale-row"><div class="sale-name">${xe(it.name)}</div><span class="muted" style="font-size:11px;white-space:nowrap">${fm(it.price)}/${it.unit}</span><input type="number" value="${it.qty}" min="1" style="width:58px;text-align:center" onchange="updQty(${i},this.value)"/><input class="iprice-edit" type="number" value="${it.price}" title="Edit price" onchange="updPrice(${i},this.value)"/><span style="font-weight:800;min-width:64px;text-align:right">${fm(it.price*it.qty)}</span><button class="btn btn-o btn-sm" onclick="remItem(${i})" style="padding:4px 8px">✕</button></div>`).join('');
+  recalc();
+}
+function updQty(i,v){SITEMS[i].qty=Math.max(1,parseInt(v)||1);renderSaleItems();}
+function updPrice(i,v){SITEMS[i].price=parseFloat(v)||SITEMS[i].price;renderSaleItems();}
+function remItem(i){SITEMS.splice(i,1);renderSaleItems();}
+
+function recalc(){
+  const sub=SITEMS.reduce((a,i)=>a+i.price*i.qty,0);
+  const disc=parseFloat(document.getElementById('ns-disc').value)||0;
+  const da=sub*disc/100;
+  tx('ns-sub',fm(sub));
+  tx('ns-damt',disc>0?`− ${fm(da)}`:'');
+  tx('ns-total',fm(sub-da));
+}
+
+function setPay(m){PAYMODE=m;document.querySelectorAll('.pay-btn[data-m]').forEach(b=>b.classList.toggle('on',b.dataset.m===m));}
+
+async function doneSale(){
+  if(!SITEMS.length)return toast('Add at least one product','er');
+  const sub=SITEMS.reduce((a,i)=>a+i.price*i.qty,0);
+  const disc=parseFloat(document.getElementById('ns-disc').value)||0;
+  const total=Math.round(sub-sub*disc/100);
+  
+  // Check stock availability
+  for(const item of SITEMS){
+    const stk=SKD.find(s=>s.id===item.id);
+    if(stk&&(stk.qty||0)<item.qty){
+      const ok=confirm(`⚠️ Low stock! "${item.name}" has only ${stk.qty} ${stk.unit} but you're selling ${item.qty}.\n\nContinue anyway?`);
+      if(!ok)return;
+    }
+  }
+
+  const sale={date:tod(),time:new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'}),customerName:document.getElementById('ns-cn').value.trim()||'Walk-in',customerPhone:document.getElementById('ns-cp').value.trim(),items:SITEMS.map(i=>({id:i.id,name:i.name,price:i.price,qty:i.qty,unit:i.unit})),subtotal:sub,discount:disc,total,payMode:PAYMODE,paid:PAYMODE!=='credit',createdBy:CU.uid,createdByName:CU.displayName||CU.email,createdAt:FV.serverTimestamp()};
+  try{
+    await db.collection('shops').doc(SID).collection('sales').add(sale);
+    for(const item of SITEMS){const stk=SKD.find(s=>s.id===item.id);if(stk)await db.collection('shops').doc(SID).collection('stock').doc(item.id).update({qty:FV.increment(-item.qty)});}
+    SITEMS=[];renderSaleItems();
+    ['ns-cn','ns-cp'].forEach(id=>document.getElementById(id).value='');
+    document.getElementById('ns-disc').value='0';setPay('cash');
+    toast(`✅ Sale: ${fm(total)} via ${PAYMODE.toUpperCase()}`);
+    go('dashboard');
+  }catch(e){toast('Error: '+e.message,'er');}
+}
+
+// ══════════════════════════════════════════════════════
+// HISTORY
+// ══════════════════════════════════════════════════════
+function renderHistory(){
+  const dF=document.getElementById('hdate').value,mF=document.getElementById('hmode').value;
+  const fil=SALD.filter(s=>(!dF||s.date===dF)&&(!mF||s.payMode===mF));
+  const tb=document.getElementById('hist-body');
+  tb.innerHTML=fil.map(s=>`<tr><td>${s.date||''}<br><span class="muted">${s.time||''}</span></td><td><b>${xe(s.customerName||'Walk-in')}</b>${s.customerPhone?`<br><span class="muted" style="font-size:11px">${s.customerPhone}</span>`:''}</td><td style="max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${(s.items||[]).map(i=>i.name+' ×'+i.qty).join(', ')}</td><td style="font-weight:800">${fm(s.total)}</td><td><span class="badge ${s.payMode==='cash'?'b-green':s.payMode==='upi'?'b-blue':'b-red'}">${(s.payMode||'').toUpperCase()}</span></td><td>${s.paid?'<span class="badge b-green">Paid</span>':'<span class="badge b-red">Pending</span>'}</td><td class="muted" style="font-size:11px">${xe(s.createdByName||'')}</td><td>${!s.paid&&s.payMode==='credit'?`<button class="btn btn-g btn-sm" onclick="openSettle('${s.id}')">Settle</button>`:'—'}</td></tr>`).join('')||'<tr><td colspan="8" style="text-align:center;padding:30px;color:var(--muted)">No sales found</td></tr>';
+}
+
+// ══════════════════════════════════════════════════════
+// CREDIT + SETTLEMENT
+// ══════════════════════════════════════════════════════
+function renderCredit(){
+  const cr=SALD.filter(s=>s.payMode==='credit'&&!s.paid);
+  const tot=cr.reduce((a,s)=>a+(s.total||0),0);
+  tx('tot-cred',fm(tot));
+  const el=document.getElementById('cred-list');
+  el.innerHTML=cr.map(s=>`<div class="cred-card"><div style="font-weight:700;font-size:15px;margin-bottom:4px">${xe(s.customerName||'Unknown')}</div><div class="muted" style="font-size:12px;margin-bottom:10px">${s.customerPhone?'📞 '+s.customerPhone+' • ':''} 📅 ${s.date||''} | By: ${xe(s.createdByName||'')}</div><div class="row ac" style="justify-content:space-between"><div style="font-size:22px;font-weight:800;color:var(--r)">${fm(s.total)}</div><button class="btn btn-g btn-sm" onclick="openSettle('${s.id}')">💳 Settle</button></div><div class="muted mt2" style="font-size:12px">${(s.items||[]).map(i=>i.name+' ×'+i.qty).join(', ')}</div></div>`).join('')||'<div class="empty"><div class="empty-icon">✅</div>No pending credit!</div>';
+}
+
+let SETTLE_MODE='cash';
+function setSettlePay(m){
+  SETTLE_MODE=m;
+  document.querySelectorAll('[data-s]').forEach(b=>b.classList.toggle('on',b.dataset.s===m));
+}
+
+function openSettle(id){
+  const s=SALD.find(x=>x.id===id);if(!s)return;
+  document.getElementById('settle-id').value=id;
+  tx('settle-name',s.customerName||'Unknown');
+  tx('settle-amt',fm(s.total));
+  document.getElementById('settle-recv-amt').value=s.total||'';
+  document.getElementById('settle-note').value='';
+  SETTLE_MODE='cash';
+  document.querySelectorAll('[data-s]').forEach(b=>b.classList.toggle('on',b.dataset.s==='cash'));
+  document.getElementById('settle-ov').classList.add('on');
+}
+
+async function doSettle(){
+  const id=document.getElementById('settle-id').value;
+  const recv=parseFloat(document.getElementById('settle-recv-amt').value)||0;
+  if(!recv)return toast('Enter amount received','er');
+  const note=document.getElementById('settle-note').value.trim();
+  try{
+    await db.collection('shops').doc(SID).collection('sales').doc(id).update({
+      paid:true,paidAt:FV.serverTimestamp(),
+      settledVia:SETTLE_MODE,settledAmount:recv,settleNote:note,
+      settledBy:CU.displayName||CU.email
+    });
+    // Also record this settlement as a cash/UPI receipt in sales summary
+    await db.collection('shops').doc(SID).collection('sales').add({
+      date:tod(),time:new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'}),
+      customerName:'Credit Settlement',customerPhone:'',
+      items:[{name:'Credit Settlement',price:recv,qty:1,unit:''}],
+      subtotal:recv,discount:0,total:recv,
+      payMode:SETTLE_MODE,paid:true,
+      isSettlement:true,originalSaleId:id,
+      createdBy:CU.uid,createdByName:CU.displayName||CU.email,
+      createdAt:FV.serverTimestamp()
+    });
+    closeSettle();toast(`✅ Settled ${fm(recv)} via ${SETTLE_MODE.toUpperCase()}`);
+  }catch(e){toast('Error: '+e.message,'er');}
+}
+function closeSettle(){document.getElementById('settle-ov').classList.remove('on');}
+
+// ══════════════════════════════════════════════════════
+// EXPENSES
+// ══════════════════════════════════════════════════════
+async function addExp(){
+  const n=document.getElementById('ex-n').value.trim(),a=parseFloat(document.getElementById('ex-a').value);
+  if(!n||!a)return toast('Name and amount required','er');
+  try{
+    await db.collection('shops').doc(SID).collection('expenses').add({name:n,amount:a,from:document.getElementById('ex-f').value.trim(),phone:document.getElementById('ex-p').value.trim(),mode:document.getElementById('ex-m').value,date:document.getElementById('ex-d').value||tod(),notes:document.getElementById('ex-no').value.trim(),createdBy:CU.uid,createdByName:CU.displayName||CU.email,createdAt:FV.serverTimestamp()});
+    ['ex-n','ex-a','ex-f','ex-p','ex-no'].forEach(id=>document.getElementById(id).value='');
+    toast('✅ Expense saved!');
+  }catch(e){toast('Error: '+e.message,'er');}
+}
+
+function renderExp(){
+  const tot=EXPD.reduce((a,e)=>a+(e.amount||0),0);
+  const tb=document.getElementById('exp-body');
+  tb.innerHTML=EXPD.map(e=>`<tr><td>${e.date||''}</td><td><b>${xe(e.name)}</b></td><td>${xe(e.from||'—')}</td><td>${e.phone||'—'}</td><td><span class="badge b-blue">${e.mode}</span></td><td style="font-weight:800;color:var(--r)">${fm(e.amount)}</td></tr>`).join('')+(EXPD.length?`<tr style="background:#fff5f5"><td colspan="5" style="text-align:right;font-weight:700;padding:10px 14px">Total</td><td style="font-weight:800;color:var(--r);padding:10px 14px">${fm(tot)}</td></tr>`:'')||'<tr><td colspan="6" style="text-align:center;padding:30px;color:var(--muted)">No expenses yet</td></tr>';
+}
+
+// ══════════════════════════════════════════════════════
+// CATALOGUE QR — Single QR page
+// ══════════════════════════════════════════════════════
+function renderCat(){
+  // Build the QR page content string for the QR code
+  const mapsUrl=SD.address?`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(SD.address)}`:'';
+  const shopInfo=`🏪 ${SD.name||'Shop'} | 📞 ${SD.phone||''} | 📍 ${SD.address||''}${mapsUrl?' | Maps: '+mapsUrl:''}`;
+
+  // Generate QR with shop info
+  const qrEl=document.getElementById('cat-qr-el');
+  qrEl.innerHTML='';
+  try{new QRCode(qrEl,{text:shopInfo.substr(0,300),width:160,height:160,correctLevel:QRCode.CorrectLevel.M});}catch(e){}
+
+  // Preview panel
+  tx('qr-shopname',SD.name||'Shop');
+  tx('qr-shopphone',(SD.phone?'📞 '+SD.phone:'')+' '+(SD.address?'📍 '+SD.address.substr(0,40):''));
+  const locBtn=document.getElementById('qr-location-btn');
+  if(mapsUrl){locBtn.href=mapsUrl;locBtn.style.display='inline-flex';}else{locBtn.style.display='none';}
+
+  // Products grouped by category
+  const cats=['Kirana','Kapda','Mahua','Other'];
+  let html='';
+  cats.forEach(cat=>{
+    const items=SKD.filter(s=>s.category===cat&&(s.qty||0)>0);
+    if(!items.length)return;
+    html+=`<div style="margin-bottom:16px"><div class="qr-cat-title">${cat}</div>${items.map(s=>`<div class="qr-product-row"><span class="qr-product-name">${xe(s.name)}${s.brand?` <span style="color:var(--muted);font-size:11px">(${xe(s.brand)})</span>`:''}</span><span class="qr-product-price">${fm(s.sellPrice)}</span></div>`).join('')}</div>`;
+  });
+  document.getElementById('qr-products').innerHTML=html||'<div class="muted" style="padding:20px;text-align:center">Add stock to show products</div>';
+}
+
+function copyQRLink(){
+  const txt=`🏪 ${SD.name||'Shop'}\n📞 ${SD.phone||''}\n📍 ${SD.address||''}\n${SD.address?'Maps: https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(SD.address):''}`;
+  navigator.clipboard.writeText(txt).then(()=>toast('Shop info copied!')).catch(()=>prompt('Copy shop info:',txt));
+}
+
+function shareQR(){
+  const txt=`🏪 ${SD.name||'Shop'}\n📞 ${SD.phone||''}\n📍 ${SD.address||''}\n${SD.address?'Find on Maps: https://maps.google.com/?q='+encodeURIComponent(SD.address):''}`;
+  if(navigator.share)navigator.share({title:SD.name,text:txt});
+  else copyQRLink();
+}
+
+// ══════════════════════════════════════════════════════
+// REPORTS
+// ══════════════════════════════════════════════════════
+function renderReports(){
+  const tRev=SALD.filter(s=>!s.isSettlement).reduce((a,s)=>a+(s.total||0),0);
+  const tExp=EXPD.reduce((a,e)=>a+(e.amount||0),0);
+  const tCred=SALD.filter(s=>!s.paid&&s.payMode==='credit').reduce((a,s)=>a+(s.total||0),0);
+  const prof=tRev-tExp;
+  tx('rp-rev',fm(tRev));tx('rp-exp',fm(tExp));tx('rp-cred',fm(tCred));
+  const pel=document.getElementById('rp-prof');pel.textContent=fm(prof);pel.className='stat-val '+(prof>=0?'s-green':'s-red');
+  const cash=SALD.filter(s=>s.payMode==='cash').reduce((a,s)=>a+(s.total||0),0);
+  const upi=SALD.filter(s=>s.payMode==='upi').reduce((a,s)=>a+(s.total||0),0);
+  const cred=SALD.filter(s=>s.payMode==='credit').reduce((a,s)=>a+(s.total||0),0);
+  document.getElementById('rp-pay').innerHTML=`<div class="stat-grid"><div class="stat-card"><div class="stat-label">💵 Cash</div><div class="stat-val s-green">${fm(cash)}</div></div><div class="stat-card"><div class="stat-label">📱 UPI</div><div class="stat-val s-blue">${fm(upi)}</div></div><div class="stat-card"><div class="stat-label">🔖 Credit</div><div class="stat-val s-red">${fm(cred)}</div></div></div>`;
+  const pm={};
+  SALD.forEach(s=>(s.items||[]).forEach(i=>{if(!pm[i.name])pm[i.name]={qty:0,rev:0};pm[i.name].qty+=i.qty||0;pm[i.name].rev+=(i.price||0)*(i.qty||0);}));
+  const top=Object.entries(pm).sort((a,b)=>b[1].rev-a[1].rev).slice(0,10);
+  document.getElementById('rp-top').innerHTML=top.length?'<div class="tw"><table><thead><tr><th>#</th><th>Product</th><th>Qty Sold</th><th>Revenue</th></tr></thead><tbody>'+top.map(([n,v],i)=>`<tr><td>${i+1}</td><td><b>${xe(n)}</b></td><td>${v.qty}</td><td style="font-weight:800;color:var(--g)">${fm(v.rev)}</td></tr>`).join('')+'</tbody></table></div>':'<div class="muted">No sales data yet</div>';
+}
+
+// ══════════════════════════════════════════════════════
+// CALENDAR
+// ══════════════════════════════════════════════════════
+function initCal(){renderCal();if(!CAL_SEL)renderDayReport(tod());}
+function calMove(d){CAL_MONTH+=d;if(CAL_MONTH>11){CAL_MONTH=0;CAL_YEAR++;}if(CAL_MONTH<0){CAL_MONTH=11;CAL_YEAR--;}renderCal();}
+
+function renderCal(){
+  const mn=['January','February','March','April','May','June','July','August','September','October','November','December'];
+  tx('cal-month',mn[CAL_MONTH]+' '+CAL_YEAR);
+  const grid=document.getElementById('cal-grid');
+  const days=['S','M','T','W','T','F','S'];
+  let html=days.map(d=>`<div class="cal-dow">${d}</div>`).join('');
+  const first=new Date(CAL_YEAR,CAL_MONTH,1).getDay();
+  const last=new Date(CAL_YEAR,CAL_MONTH+1,0).getDate();
+  const todayStr=tod();
+  // Sales grouped by date
+  const saleDates={};
+  SALD.forEach(s=>{if(s.date){if(!saleDates[s.date])saleDates[s.date]=0;saleDates[s.date]+=(s.total||0);}});
+  // prev month padding
+  const prevLast=new Date(CAL_YEAR,CAL_MONTH,0).getDate();
+  for(let i=0;i<first;i++){html+=`<div class="cal-day other-month">${prevLast-first+i+1}</div>`;}
+  for(let d=1;d<=last;d++){
+    const ds=`${CAL_YEAR}-${String(CAL_MONTH+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    let cls='cal-day';
+    if(saleDates[ds])cls+=' has-sales';
+    if(ds===CAL_SEL)cls+=' selected';
+    if(ds===todayStr)cls+=' today-mark';
+    html+=`<div class="${cls}" onclick="selDay('${ds}')">${d}</div>`;
+  }
+  grid.innerHTML=html;
+}
+
+function selDay(ds){CAL_SEL=ds;renderCal();renderDayReport(ds);}
+
+function renderDayReport(ds){
+  const daySales=SALD.filter(s=>s.date===ds&&!s.isSettlement);
+  const dayExp=EXPD.filter(e=>e.date===ds);
+  const rev=daySales.reduce((a,s)=>a+(s.total||0),0);
+  const cash=daySales.filter(s=>s.payMode==='cash').reduce((a,s)=>a+(s.total||0),0);
+  const upi=daySales.filter(s=>s.payMode==='upi').reduce((a,s)=>a+(s.total||0),0);
+  const cred=daySales.filter(s=>s.payMode==='credit').reduce((a,s)=>a+(s.total||0),0);
+  const exp=dayExp.reduce((a,e)=>a+(e.amount||0),0);
+  const profit=rev-exp;
+  // Settlements received on this day
+  const settlements=SALD.filter(s=>s.date===ds&&s.isSettlement);
+  const settleAmt=settlements.reduce((a,s)=>a+(s.total||0),0);
+
+  document.getElementById('day-report-area').innerHTML=`
+    <div class="day-report">
+      <div class="day-report-header">
+        <div><div style="font-size:17px;font-weight:800">${ds}</div><div class="muted">${daySales.length} sale(s) recorded</div></div>
+        <div style="text-align:right"><div style="font-size:24px;font-weight:900;color:var(--g)">${fm(rev)}</div><div class="muted" style="font-size:12px">Total Revenue</div></div>
+      </div>
+      <div class="stat-grid" style="margin-bottom:16px">
+        <div class="stat-card"><div class="stat-label">💵 Cash In</div><div class="stat-val s-green">${fm(cash)}</div></div>
+        <div class="stat-card"><div class="stat-label">📱 UPI In</div><div class="stat-val s-blue">${fm(upi)}</div></div>
+        <div class="stat-card"><div class="stat-label">🔖 Credit</div><div class="stat-val s-red">${fm(cred)}</div></div>
+        <div class="stat-card"><div class="stat-label">💸 Expenses</div><div class="stat-val s-red">${fm(exp)}</div></div>
+        <div class="stat-card"><div class="stat-label">💰 Net Profit</div><div class="stat-val ${profit>=0?'s-green':'s-red'}">${fm(profit)}</div></div>
+        ${settleAmt?`<div class="stat-card"><div class="stat-label">✅ Settled</div><div class="stat-val s-green">${fm(settleAmt)}</div></div>`:''}
+      </div>
+      <div class="divider"></div>
+      <div class="section-title mb3">Transactions</div>
+      ${daySales.length?'<div class="tw"><table><thead><tr><th>Time</th><th>Customer</th><th>Items</th><th>Total</th><th>Mode</th><th>Status</th></tr></thead><tbody>'+daySales.map(s=>`<tr><td>${s.time||''}</td><td>${xe(s.customerName||'Walk-in')}${s.customerPhone?`<br><span class="muted" style="font-size:11px">${s.customerPhone}</span>`:''}</td><td style="max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${(s.items||[]).map(i=>i.name+' ×'+i.qty).join(', ')}</td><td style="font-weight:800">${fm(s.total)}</td><td><span class="badge ${s.payMode==='cash'?'b-green':s.payMode==='upi'?'b-blue':'b-red'}">${s.payMode||''}</span></td><td>${s.paid?'<span class="badge b-green">Paid</span>':'<span class="badge b-red">Pending</span>'}</td></tr>`).join('')+'</tbody></table></div>':'<div class="muted">No sales on this day</div>'}
+      ${dayExp.length?`<div class="section-title mt4 mb3">Expenses</div><div class="tw"><table><thead><tr><th>Item</th><th>From</th><th>Mode</th><th>Amount</th></tr></thead><tbody>${dayExp.map(e=>`<tr><td><b>${xe(e.name)}</b></td><td>${xe(e.from||'—')}</td><td><span class="badge b-blue">${e.mode}</span></td><td style="font-weight:800;color:var(--r)">${fm(e.amount)}</td></tr>`).join('')}</tbody></table></div>`:''}
+    </div>`;
+}
+
+// ══════════════════════════════════════════════════════
+// TEAM
+// ══════════════════════════════════════════════════════
+function renderTeam(){
+  tx('team-code',SD.shopCode||'------');
+  const el=document.getElementById('team-list');
+  const members=SD.members||[];
+  el.innerHTML=members.map(m=>`<div class="member-row"><div class="avatar">${(m.name||'?')[0].toUpperCase()}</div><div style="flex:1"><div style="font-weight:700">${xe(m.name||'Unknown')}</div><div class="muted" style="font-size:12px">${m.email||''}</div></div><span class="badge ${m.role==='owner'?'b-green':m.role==='manager'?'b-blue':'b-yellow'}">${m.role}</span>${m.role!=='owner'&&ROLE==='owner'?`<button class="btn btn-r btn-sm" onclick="removeMember('${m.uid}')">Remove</button>`:''}</div>`).join('')||'<div class="muted">No members</div>';
+}
+
+async function removeMember(uid){
+  if(!confirm('Remove this member?'))return;
+  const m=(SD.members||[]).find(x=>x.uid===uid);if(!m)return;
+  try{
+    await db.collection('shops').doc(SID).update({members:FV.arrayRemove(m)});
+    await db.collection('users').doc(uid).update({shopId:firebase.firestore.FieldValue.delete(),role:firebase.firestore.FieldValue.delete()});
+    SD.members=(SD.members||[]).filter(x=>x.uid!==uid);renderTeam();toast('Member removed');
+  }catch(e){toast('Error: '+e.message,'er');}
+}
+
+function copyCode(){
+  const code=SD.shopCode||'';
+  navigator.clipboard.writeText(code).then(()=>toast('Code copied: '+code)).catch(()=>prompt('Your shop code:',code));
+}
+
+// ══════════════════════════════════════════════════════
+// SETTINGS
+// ══════════════════════════════════════════════════════
+function popSettings(){
+  document.getElementById('set-n').value=SD.name||'';
+  document.getElementById('set-o').value=SD.ownerName||'';
+  document.getElementById('set-p').value=SD.phone||'';
+  document.getElementById('set-g').value=SD.gst||'';
+  document.getElementById('set-a').value=SD.address||'';
+  document.getElementById('set-u').value=SD.upi||'';
+  refreshSetQR();
+}
+
+function refreshSetQR(){
+  const upi=(document.getElementById('set-u')||{value:''}).value.trim()||SD.upi||'';
+  const name=(document.getElementById('set-n')||{value:''}).value.trim()||SD.name||'Shop';
+  const addr=(document.getElementById('set-a')||{value:''}).value.trim()||SD.address||'';
+  makeQR('set-upi-qr',upi?`upi://pay?pa=${encodeURIComponent(upi)}&pn=${encodeURIComponent(name)}&cu=INR`:'');
+  makeQR('set-map-qr',addr?`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(addr)}`:'');
+}
+
+async function saveSettings(){
+  const name=document.getElementById('set-n').value.trim();
+  if(!name)return toast('Shop name required','er');
+  const upd={name,ownerName:document.getElementById('set-o').value.trim(),phone:document.getElementById('set-p').value.trim(),gst:document.getElementById('set-g').value.trim(),address:document.getElementById('set-a').value.trim(),upi:document.getElementById('set-u').value.trim()};
+  try{
+    await db.collection('shops').doc(SID).update(upd);
+    SD={...SD,...upd};
+    document.getElementById('s-name').textContent=SD.name;
+    document.getElementById('s-phone').textContent=SD.phone;
+    toast('✅ Settings saved!');refreshSetQR();
+  }catch(e){toast('Error: '+e.message,'er');}
+}
+
+// ══════════════════════════════════════════════════════
+// GLOBAL SEARCH
+// ══════════════════════════════════════════════════════
+function gSearch(q){
+  const el=document.getElementById('sd');
+  if(!q||q.length<2){el.style.display='none';return;}
+  const m=SKD.filter(s=>s.name.toLowerCase().includes(q.toLowerCase())||(s.brand||'').toLowerCase().includes(q.toLowerCase())).slice(0,8);
+  if(!m.length){el.style.display='none';return;}
+  el.style.display='block';
+  el.innerHTML=m.map(s=>`<div class="psr-item"><div class="pname">${xe(s.name)}${s.brand?' · '+xe(s.brand):''} <span class="badge b-blue" style="font-size:10px">${s.category}</span></div><span class="pprice">${fm(s.sellPrice)}</span></div>`).join('');
+}
+document.addEventListener('click',e=>{if(!e.target.closest('#sd')&&!e.target.closest('#gs'))document.getElementById('sd').style.display='none';});
+
+// ══════════════════════════════════════════════════════
+// QR HELPER
+// ══════════════════════════════════════════════════════
+function makeQR(elId,text){
+  const el=document.getElementById(elId);if(!el)return;
+  el.innerHTML='';
+  if(!text){el.innerHTML='<span style="font-size:11px;color:var(--muted)">Not set</span>';return;}
+  try{new QRCode(el,{text,width:120,height:120,correctLevel:QRCode.CorrectLevel.M});}catch(e){el.innerHTML='<span style="font-size:11px;color:var(--muted)">QR Error</span>';}
+}
+
+// ══════════════════════════════════════════════════════
+// SMART AI CHAT
+// ══════════════════════════════════════════════════════
+function toggleChat(){
+  CHATOPEN=!CHATOPEN;
+  document.getElementById('chat-panel').style.display=CHATOPEN?'flex':'none';
+  if(CHATOPEN)document.getElementById('chat-inp').focus();
+}
+
+function sendChat(){
+  const inp=document.getElementById('chat-inp'),q=inp.value.trim();if(!q)return;
+  inp.value='';addMsg(q,'user');
+  const el=addMsg('Thinking...','bot');el.style.opacity='.5';
+  processAI(q).then(r=>{el.remove();addMsg(r,'bot');});
+}
+
+function addMsg(text,type){
+  const el=document.createElement('div');el.className='cmsg '+type;
+  el.innerHTML=text.replace(/\n/g,'<br>');
+  const ms=document.getElementById('chat-msgs');ms.appendChild(el);ms.scrollTop=99999;return el;
+}
+
+async function processAI(input){
+  const t=input.trim(),tl=t.toLowerCase(),words=t.split(/\s+/).filter(w=>w.length>2);
+
+  // ADD PRODUCT
+  if(/^(?:add|jodo|dalo|stock\s+add)\s+/i.test(t)){
+    const qm=t.match(/(\d+\.?\d*)\s*(kg|litre?|ltr?|pcs?|piece|packet|pkt|box|dozen|bundle)/i);
+    const bm=t.match(/(?:buy|kharid|at|cost)\s+(\d+\.?\d*)/i);
+    const sm=t.match(/(?:sell|becho|rate|selling)\s+(\d+\.?\d*)/i);
+    const qty=qm?parseFloat(qm[1]):1,unit=qm?qm[2]:' Piece';
+    const buy=bm?parseFloat(bm[1]):0,sell=sm?parseFloat(sm[1]):buy;
+    let name=t.replace(/^(?:add|jodo|dalo|stock\s+add)\s+/i,'').replace(/\d+\.?\d*\s*(?:kg|litre?|ltr?|pcs?|piece|packet|pkt|box|dozen|bundle)/i,'').replace(/(?:buy|kharid|at|cost)\s+\d+\.?\d*/i,'').replace(/(?:sell|becho|rate|selling)\s+\d+\.?\d*/i,'').replace(/\s+/g,' ').trim();
+    if(!name||name.length<2)return '❌ Could not read product name. Try: "add rice 50 kg buy 38 sell 45"';
+    if(!sell)return `Tell me selling price: "add ${qty} ${unit} ${name} buy ${buy} sell [price]"`;
+    try{
+      await db.collection('shops').doc(SID).collection('stock').add({name,qty,unit:unit.charAt(0).toUpperCase()+unit.slice(1).toLowerCase(),buyPrice:buy,sellPrice:sell,brand:'',category:'Kirana',supplier:'',supplierPhone:'',notes:'',purchaseMode:'cash',addedBy:CU.displayName||CU.email,addedAt:FV.serverTimestamp()});
+      return `✅ Added "${name}" to Kirana!\nQty: ${qty} ${unit} | Buy: ${fm(buy)} | Sell: ${fm(sell)}\nEdit in Stock Board to change category.`;
+    }catch(e){return '❌ Error: '+e.message;}
+  }
+
+  // UPDATE PRICE
+  if(/(?:update|change|set|badlo)\s+.+(?:price|rate|bhav)|.+(?:price|rate)\s+(?:to\s+)?(\d+)/i.test(tl)){
+    const nm=t.match(/(?:to|=)\s*(\d+\.?\d*)/i)||t.match(/(\d+\.?\d*)\s*(?:karo?|kar\s+do|hai)?$/i);
+    const np=nm?parseFloat(nm[1]):0;
+    if(!np)return '❌ Tell me the new price. E.g.: "update oil price to 150"';
+    const nameWords=t.replace(/(?:update|change|set|badlo|price|rate|bhav|to|karo?|kar\s+do|\d+\.?\d*|₹)/gi,'').trim().split(/\s+/).filter(w=>w.length>1);
+    const found=SKD.find(s=>nameWords.some(w=>s.name.toLowerCase().includes(w.toLowerCase())));
+    if(!found)return `❌ Product not found. Words searched: "${nameWords.join(' ')}"`;
+    try{
+      await db.collection('shops').doc(SID).collection('stock').doc(found.id).update({sellPrice:np,updatedAt:FV.serverTimestamp()});
+      return `✅ Updated "${found.name}" sell price to ${fm(np)}!`;
+    }catch(e){return '❌ Error: '+e.message;}
+  }
+
+  // ADD CREDIT
+  if(/(?:credit|udhar|udhaar)\s+/i.test(tl)&&/\d+/.test(t)&&!/paid|diya|clear/.test(tl)){
+    const am=t.match(/(?:rs?\.?|₹)?\s*(\d+\.?\d*)/),ph=t.match(/\b(\d{10})\b/);
+    const amt=am?parseFloat(am[1]):0;
+    if(!amt)return '❌ Tell me amount. E.g.: "Ramesh credit 500"';
+    const custName=t.replace(/(?:credit|udhar|udhaar)/gi,'').replace(/(?:rs?\.?|₹)?\d+\.?\d*/g,'').replace(/\d{10}/,'').replace(/\s+/g,' ').trim()||'Credit Customer';
+    try{
+      await db.collection('shops').doc(SID).collection('sales').add({date:tod(),time:new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'}),customerName:custName,customerPhone:ph?ph[1]:'',items:[{name:'Credit Entry',price:amt,qty:1,unit:''}],subtotal:amt,discount:0,total:amt,payMode:'credit',paid:false,createdBy:CU.uid,createdByName:CU.displayName||CU.email,createdAt:FV.serverTimestamp()});
+      return `✅ Credit recorded!\nCustomer: ${custName}\nAmount: ${fm(amt)}\nTrack in Credit Ledger.`;
+    }catch(e){return '❌ Error: '+e.message;}
+  }
+
+  // MARK PAID (with mode)
+  if(/paid|diya|de\s+diya|chukta|clear/i.test(tl)){
+    const viaUpi=/upi|online|phone\s*pe|gpay|paytm/i.test(tl);
+    const mode=viaUpi?'upi':'cash';
+    const nameW=t.replace(/paid|diya|de\s+diya|chukta|clear|ne|ka|ki|credit|udhar|via|through|upi|online|phonepe|gpay|paytm|cash/gi,'').replace(/\s+/g,' ').trim().toLowerCase();
+    if(nameW.length>1){
+      const crSales=SALD.filter(s=>s.payMode==='credit'&&!s.paid&&(s.customerName||'').toLowerCase().includes(nameW));
+      if(!crSales.length)return `No pending credit found for "${nameW}".`;
+      try{
+        for(const s of crSales){
+          await db.collection('shops').doc(SID).collection('sales').doc(s.id).update({paid:true,paidAt:FV.serverTimestamp(),settledVia:mode,settledBy:CU.displayName||CU.email});
+        }
+        const tot=crSales.reduce((a,s)=>a+(s.total||0),0);
+        return `✅ Marked ${crSales.length} credit entry(ies) paid for "${crSales[0].customerName}"!\nAmount: ${fm(tot)} | Mode: ${mode.toUpperCase()}`;
+      }catch(e){return '❌ Error: '+e.message;}
+    }
+  }
+
+  // REMAINING CREDIT for a customer
+  if(/(?:kitna|how\s*much|remaining|baki|pending)\s+(?:credit|udhar|paisa)?\s*(?:hai|of|for)?/i.test(tl)){
+    const nameW=t.replace(/kitna|how\s*much|remaining|baki|pending|credit|udhar|paisa|hai|of|for|ka|ki/gi,'').trim().toLowerCase();
+    if(nameW.length>1){
+      const cr=SALD.filter(s=>s.payMode==='credit'&&!s.paid&&(s.customerName||'').toLowerCase().includes(nameW));
+      if(!cr.length)return `No pending credit for "${nameW}".`;
+      const tot=cr.reduce((a,s)=>a+(s.total||0),0);
+      return `💳 "${cr[0].customerName}" credit pending: ${fm(tot)}\n${cr.length} entry(ies)`;
+    }
+  }
+
+  // PRICE QUERY
+  if(/price|rate|kitna|bhav/i.test(tl)){
+    const mp=SKD.filter(s=>words.some(w=>s.name.toLowerCase().includes(w.toLowerCase())));
+    if(mp.length===1){const p=mp[0];return `📦 ${p.name}${p.brand?' ('+p.brand+')':''}:\n💰 Sell: ${fm(p.sellPrice)}/${p.unit}\n🏷️ Buy: ${fm(p.buyPrice)}\n📊 Stock: ${p.qty} ${p.unit}`;}
+    if(mp.length>1)return `Found ${mp.length} products:\n`+mp.slice(0,5).map(p=>`• ${p.name}: ${fm(p.sellPrice)}`).join('\n');
+  }
+
+  // STOCK QUERY
+  if(/stock|available|kitna(?:\s+hai)?|baki/i.test(tl)){
+    const mp=SKD.filter(s=>words.some(w=>s.name.toLowerCase().includes(w.toLowerCase())));
+    if(mp.length===1)return `📦 ${mp[0].name}: ${mp[0].qty} ${mp[0].unit} available`;
+    if(/low|khatam|kam/i.test(tl)){const lw=SKD.filter(s=>(s.qty||0)<=3);return lw.length?`⚠️ Low stock:\n`+lw.map(s=>`• ${s.name}: ${s.qty} ${s.unit}`).join('\n'):'✅ All stock levels ok!';}
+    return `📦 ${SKD.length} items total. Kirana:${SKD.filter(s=>s.category==='Kirana').length} Kapda:${SKD.filter(s=>s.category==='Kapda').length} Mahua:${SKD.filter(s=>s.category==='Mahua').length}`;
+  }
+
+  // TODAY
+  if(/today|aaj/i.test(tl)){
+    const t2=tod(),ts=SALD.filter(s=>s.date===t2&&!s.isSettlement);
+    const rev=ts.reduce((a,s)=>a+(s.total||0),0);
+    return `📅 Today (${t2}):\n🧾 ${ts.length} sales | Revenue: ${fm(rev)}\n💵 Cash: ${fm(ts.filter(s=>s.payMode==='cash').reduce((a,s)=>a+(s.total||0),0))}\n📱 UPI: ${fm(ts.filter(s=>s.payMode==='upi').reduce((a,s)=>a+(s.total||0),0))}`;
+  }
+
+  // TOTAL CREDIT
+  if(/(?:total|kitna|pending)\s+(?:credit|udhar)/i.test(tl)){
+    const cr=SALD.filter(s=>s.payMode==='credit'&&!s.paid);
+    const tot=cr.reduce((a,s)=>a+(s.total||0),0);
+    if(!cr.length)return '✅ No pending credit!';
+    const custs=[...new Set(cr.map(s=>s.customerName))];
+    return `💳 Total pending: ${fm(tot)}\n`+custs.map(c=>`• ${c}: ${fm(cr.filter(s=>s.customerName===c).reduce((a,s)=>a+(s.total||0),0))}`).join('\n');
+  }
+
+  // REVENUE
+  if(/revenue|kamai|income|total\s+sale|profit/i.test(tl)){
+    const rev=SALD.filter(s=>!s.isSettlement).reduce((a,s)=>a+(s.total||0),0);
+    const exp=EXPD.reduce((a,e)=>a+(e.amount||0),0);
+    return `📈 Revenue: ${fm(rev)} | Expenses: ${fm(exp)} | Profit: ${fm(rev-exp)}`;
+  }
+
+  // PRODUCT FALLBACK
+  const mp2=SKD.filter(s=>words.some(w=>w.length>2&&s.name.toLowerCase().includes(w.toLowerCase())));
+  if(mp2.length===1)return `📦 ${mp2[0].name}: ${fm(mp2[0].sellPrice)}/${mp2[0].unit} | Stock: ${mp2[0].qty} ${mp2[0].unit}`;
+  if(mp2.length>1)return `Found:\n`+mp2.slice(0,5).map(p=>`• ${p.name}: ${fm(p.sellPrice)}`).join('\n');
+
+  return `Try:\n➕ "add rice 50 kg buy 38 sell 45"\n✏️ "update oil price to 150"\n💳 "Ramesh credit 500"\n✓ "Ramesh paid via UPI"\n🔍 "price of salt"\n📅 "today sales"\n📊 "total credit"`;
+}
+
+// ══════════════════════════════════════════════════════
+// UTILITIES
+// ══════════════════════════════════════════════════════
+function tx(id,val){const el=document.getElementById(id);if(el)el.textContent=val;}
+function xe2(s){return String(s||'').replace(/'/g,"\\'");}
+
+// Init
+document.getElementById('topdate').textContent=new Date().toLocaleDateString('en-IN',{weekday:'short',day:'numeric',month:'short',year:'numeric'});
+if(window.innerWidth<720){const g=document.getElementById('dash-bottom');if(g)g.style.gridTemplateColumns='1fr';}
+
+// Hide sale search on outside click
+document.addEventListener('click',e=>{if(!e.target.closest('#ns-res')&&!e.target.closest('#ns-srch'))document.getElementById('ns-res').style.display='none';});
+</script>
+</body>
+</html>
